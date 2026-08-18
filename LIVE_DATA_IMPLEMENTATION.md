@@ -357,3 +357,40 @@ Done when:
 - No claim that AI caused a failure without evidence links and a bounded causal window.
 - No full-prompt retention by default.
 - No deployment of private engine source to this public dashboard repository.
+
+## Start Here: Controlled Pilot Gate
+
+The next work item is a single, non-destructive pilot. Do not connect broad workstation or cloud access and do not attempt to monitor all AI activity at once. The pilot proves the full forensic chain for one approved workflow before the platform expands.
+
+### Current status
+
+| Pilot component | Status |
+| --- | --- |
+| Local redacted, hash-chained AI capture | Implemented and validated. |
+| Requested action, observed execution, and artifact evidence model | Implemented and validated locally. |
+| Execution-gated attribution | Implemented and validated locally. |
+| Static dashboard search, timeline, and demo report export | Implemented; uses demo records only. |
+| Real workstation/cloud connectors, persistent database, authenticated API, and live dashboard | Not built. |
+
+### What must be supplied before connection
+
+1. One approved workflow: owner, workstation, application, and monitoring scope.
+2. AI path: provider, SDK/agent/IDE/MCP tool, approved endpoint, and streaming behavior.
+3. Action path: approved tools/targets and available receipts, job IDs, audit events, diffs, or logs.
+4. One safe failure signal that can share a correlation ID.
+5. Capture depth, redaction additions, retention, data classification, and investigator access rules.
+6. Dedicated cloud project/resource group, region, identity provider, and least-privilege service identity plan.
+
+### Pilot acceptance criteria
+
+- AI request, requested action, observed execution, target receipt, and failure signal share one correlation ID.
+- The evidence chain verifies without an unexplained gap.
+- An investigator can search the event and reopen its evidence-linked timeline later.
+- Actual execution and its receipt are separate from AI intent; missing evidence is an explicit gap.
+- `AI_CAUSED` is unavailable without execution/outcome proof.
+- A case-record export contains the same evidence IDs, action result, artifact references, and chain state used for attribution.
+- Capture failure never blocks the underlying AI workflow.
+
+## Preservation Boundary
+
+The private repository is the source of truth for engine code, production design, and future live integration. This public repository remains dashboard/demo and partner-safe documentation only. It must never receive engine source, credentials, real evidence, or live case data.
