@@ -199,6 +199,20 @@
   .legend span { display: inline-flex; align-items: center; gap: 7px; }
   .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
+  /* ---------- Executed actions ---------- */
+  .action-list { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .action { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 12px; padding: 17px 18px; }
+  .action-head { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .action-id { font-family: var(--mono); color: var(--trust); font-size: 12px; font-weight: 650; }
+  .action-state { color: var(--teal); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+  .action-state.gap { color: var(--amber); }
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  @media (max-width: 700px) { .action-grid { grid-template-columns: 1fr; } }
+  .action-grid .label { color: var(--muted); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+  .action-grid .value { color: var(--ink-2); font-size: 13.5px; margin-top: 5px; white-space: pre-wrap; }
+  .artifact-row { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+  .artifact-row b { color: var(--ink-2); font-weight: 600; }
+
   /* ---------- Evidence list ---------- */
   .ev-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
   .ev-item { display: grid; grid-template-columns: 76px 1fr auto; gap: 16px; align-items: center; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 11px; }
@@ -322,6 +336,21 @@ const DATA = {
         { id: "E-1045", title: "Publication tool accepted content without validation", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "09:41:07" } },
         { id: "E-1046", title: "Knowledge-base API published article", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:41:08" } }
       ],
+      executions: [
+        {
+          id: "X-1045",
+          requested: "publish_article(article_revision: kb-2026-184)",
+          target: "Knowledge Base API /articles/kb-2026-184",
+          status: "Observed executed",
+          actualOutput: "HTTP 201 Created\narticle_revision=kb-2026-184\npublish_state=published",
+          source: "API receipt",
+          references: ["E-1045", "E-1046"],
+          artifacts: [
+            "API receipt · hash: 5d3c...91af · retained reference: receipt/kb-2026-184",
+            "Screenshot: not captured for this action"
+          ]
+        }
+      ],
       notes: [
         { text: "The model recommended an outdated procedure.", ev: ["E-1044"] },
         { text: "The agent workflow did not validate the content before publication.", ev: ["E-1045"] },
@@ -375,6 +404,18 @@ const DATA = {
         { id: "E-2012", title: "Pricing API returned value set", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:12:12" } },
         { id: "E-2013", title: "Model formatted quote from returned values", type: "Observed Evidence", meta: { Model: "GPT-X", Timestamp: "09:12:13" } }
       ],
+      executions: [
+        {
+          id: "X-2012",
+          requested: "pricing_api.get_quote(product_id)",
+          target: "Pricing API /quote",
+          status: "Observed executed",
+          actualOutput: "HTTP 200 OK\nsource_version=2026-08-17T00:00:00Z\ncache_state=stale",
+          source: "API response receipt",
+          references: ["E-2011", "E-2012"],
+          artifacts: ["API response receipt · hash: 7ea2...16c4 · retained reference: receipt/pricing-quote"]
+        }
+      ],
       notes: [
         { text: "The pricing API returned stale values.", ev: ["E-2012"] },
         { text: "The model formatted a quote from stale inputs.", ev: ["E-2013"] }
@@ -421,6 +462,18 @@ const DATA = {
         { id: "E-3001", title: "Operator started maintenance task", type: "Observed Evidence", meta: { Source: "Application activity", Timestamp: "14:20:00" } },
         { id: "E-3002", title: "Agent received task", type: "Observed Evidence", meta: { Source: "Agent activity", Timestamp: "14:20:05" } },
         { id: "E-3003", title: "Partial tool-call record (arguments missing)", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "14:20:11" } }
+      ],
+      executions: [
+        {
+          id: "X-3003",
+          requested: "db_exec(unknown arguments)",
+          target: "Production database",
+          status: "Outcome not captured",
+          actualOutput: "No target-system receipt, result, or database audit event was retained.",
+          source: "Capture gap",
+          references: ["E-3003"],
+          artifacts: ["No screenshot, receipt, or audit artifact retained"]
+        }
       ],
       notes: [
         { text: "An AI-assisted database operation occurred, but its arguments were not captured.", ev: ["E-3003"] }
@@ -582,6 +635,21 @@ function viewDetail(id) {
     </div>`;
   }).join("");
 
+  const executions = (i.executions || []).map((action) => {
+    const gap = action.status === "Outcome not captured";
+    const references = action.references.map((ref) => `<span class="evref" data-ev="${ref}">${ref}</span>`).join(" ");
+    return `<div class="action">
+      <div class="action-head"><span class="action-id">${esc(action.id)}</span><span class="action-state${gap ? " gap" : ""}">${esc(action.status)}</span></div>
+      <div class="action-grid">
+        <div><div class="label">AI-requested action</div><div class="value">${esc(action.requested)}</div></div>
+        <div><div class="label">Observed target-system outcome</div><div class="value">${esc(action.actualOutput)}</div></div>
+        <div><div class="label">Target / source</div><div class="value">${esc(action.target)} · ${esc(action.source)}</div></div>
+        <div><div class="label">Evidence references</div><div class="value">${references}</div></div>
+      </div>
+      <div class="artifact-row"><b>Supporting artifacts:</b> ${action.artifacts.map(esc).join(" · ")}</div>
+    </div>`;
+  }).join("");
+
   const notes = i.notes.map((f, n) => {
     const refs = f.ev.map((r) => `<span class="evref" data-ev="${r}">${r}</span>`).join(" ");
     return `<div class="note">
@@ -633,6 +701,10 @@ function viewDetail(id) {
     </div>
     <div class="timeline">${tl}</div>
 
+    <h2 class="sec">Executed action &amp; outcome</h2>
+    <p class="muted" style="font-size:13.5px;margin:0">Requested action, observed target-system result, and retained receipts or artifacts. A missing result is evidence of a coverage gap, not an inferred outcome.</p>
+    <div class="action-list">${executions}</div>
+
     <h2 class="sec">Evidence</h2>
     <div class="ev-list">${evItems}</div>
 
@@ -675,8 +747,9 @@ function exportCaseRecord(id) {
   const list = (items) => `<ul>${items.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`;
   const timeline = i.timeline.map((event) => `<tr><td>${esc(event.time)}</td><td>${esc(event.mark || "observed")}</td><td>${esc(event.text)}</td></tr>`).join("");
   const evidence = i.evidence.map((item) => `<tr><td>${esc(item.id)}</td><td>${esc(item.title)}</td><td>${esc(Object.entries(item.meta).map(([key, value]) => `${key}: ${value}`).join(" · "))}</td></tr>`).join("");
+  const executions = (i.executions || []).map((action) => `<tr><td>${esc(action.id)}</td><td>${esc(action.requested)}</td><td>${esc(action.actualOutput)}</td><td>${esc(action.target)} · ${esc(action.source)}</td><td>${esc(action.references.join(", "))}</td></tr>`).join("");
   const reportNotes = i.notes.map((note, index) => `<li>Note ${String(index + 1).padStart(2, "0")}: ${esc(note.text)} <span>References: ${esc(note.ev.join(", "))}</span></li>`).join("");
-  const report = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(i.id)} forensic case record</title><style>body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202c;max-width:960px;margin:42px auto;padding:0 24px}h1{font-size:30px;margin:0 0 4px}h2{font-size:14px;text-transform:uppercase;letter-spacing:.09em;border-bottom:1px solid #d8dee8;padding-bottom:8px;margin-top:34px}p,li{color:#354154}.meta{color:#64748b}.notice{padding:14px 16px;border-left:4px solid #64748b;background:#f4f6f8}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #d8dee8}th{font-size:12px;color:#64748b;text-transform:uppercase}span{color:#64748b;font-size:13px}</style><body><div class="meta">ClaimTraceAI (AIBlackBox) · Forensic Case Record · ${esc(i.id)}</div><h1>${esc(i.title)}</h1><p class="meta">AI system: ${esc(i.system)} · Application: ${esc(i.app)} · Investigation status: ${esc(i.status)} · Exported: ${new Date().toISOString()}</p><div class="notice">This record preserves captured reference data for later investigation. It does not determine whether an action was right or wrong, calculate business impact, financial loss, or liability.</div><h2>Investigation scope</h2><p><b>Observed failure:</b> ${esc(i.failure)}<br><b>What was observed:</b> ${esc(i.whatHappened)}<br><b>Root-cause reference:</b> ${esc(i.rootCause)}<br><b>AI role reference:</b> ${esc(ATTR_LABEL[i.attribution])}<br><b>Evidence strength:</b> ${esc(i.evidenceStrength)}</p><h2>Retained timeline</h2><table><thead><tr><th>Time</th><th>Record role</th><th>Event</th></tr></thead><tbody>${timeline}</tbody></table><h2>Evidence inventory</h2><table><thead><tr><th>Evidence ID</th><th>Captured item</th><th>Reference metadata</th></tr></thead><tbody>${evidence}</tbody></table><h2>Forensic notes</h2><ul>${reportNotes}</ul><h2>Contributing references</h2>${list(i.contributing)}<h2>Known gaps / unknowns</h2>${list(i.facts.unknown)}<h2>Integrity and handling</h2><p>Evidence strength: ${esc(i.evidenceStrength)}. Chain integrity: unavailable in this static demo. In the live product, the export must include evidence hashes, chain-verification result, retention status, capture gaps, policy version, and an audit reference.</p></body></html>`;
+  const report = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(i.id)} forensic case record</title><style>body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202c;max-width:960px;margin:42px auto;padding:0 24px}h1{font-size:30px;margin:0 0 4px}h2{font-size:14px;text-transform:uppercase;letter-spacing:.09em;border-bottom:1px solid #d8dee8;padding-bottom:8px;margin-top:34px}p,li{color:#354154}.meta{color:#64748b}.notice{padding:14px 16px;border-left:4px solid #64748b;background:#f4f6f8}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #d8dee8}th{font-size:12px;color:#64748b;text-transform:uppercase}span{color:#64748b;font-size:13px}</style><body><div class="meta">ClaimTraceAI (AIBlackBox) · Forensic Case Record · ${esc(i.id)}</div><h1>${esc(i.title)}</h1><p class="meta">AI system: ${esc(i.system)} · Application: ${esc(i.app)} · Investigation status: ${esc(i.status)} · Exported: ${new Date().toISOString()}</p><div class="notice">This record preserves captured reference data for later investigation. It does not determine whether an action was right or wrong, calculate business impact, financial loss, or liability.</div><h2>Investigation scope</h2><p><b>Observed failure:</b> ${esc(i.failure)}<br><b>What was observed:</b> ${esc(i.whatHappened)}<br><b>Root-cause reference:</b> ${esc(i.rootCause)}<br><b>AI role reference:</b> ${esc(ATTR_LABEL[i.attribution])}<br><b>Evidence strength:</b> ${esc(i.evidenceStrength)}</p><h2>Retained timeline</h2><table><thead><tr><th>Time</th><th>Record role</th><th>Event</th></tr></thead><tbody>${timeline}</tbody></table><h2>Executed actions and observed outcomes</h2><table><thead><tr><th>Action ID</th><th>Requested action</th><th>Observed outcome</th><th>Target / source</th><th>Evidence</th></tr></thead><tbody>${executions}</tbody></table><h2>Evidence inventory</h2><table><thead><tr><th>Evidence ID</th><th>Captured item</th><th>Reference metadata</th></tr></thead><tbody>${evidence}</tbody></table><h2>Forensic notes</h2><ul>${reportNotes}</ul><h2>Contributing references</h2>${list(i.contributing)}<h2>Known gaps / unknowns</h2>${list(i.facts.unknown)}<h2>Integrity and handling</h2><p>Evidence strength: ${esc(i.evidenceStrength)}. Chain integrity: unavailable in this static demo. In the live product, the export must include evidence hashes, chain-verification result, retention status, capture gaps, policy version, and an audit reference.</p></body></html>`;
   const blob = new Blob([report], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

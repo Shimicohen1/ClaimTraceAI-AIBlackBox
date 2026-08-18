@@ -51,6 +51,31 @@ Not yet implemented:
 - Every conclusion records the evidence set, policy/rule version, actor, and time used to create it.
 - A broken evidence chain, unavailable source, or incomplete causal window makes attribution provisional.
 
+## Executed Action and Outcome Evidence
+
+The engine must distinguish intent from effect. A model response or requested tool call shows what AI proposed; it does not by itself prove that a target system executed the action or that the action created the observed failure.
+
+For each consequential action, retain the following separate records when available:
+
+| Evidence layer | What it answers | Preferred representation |
+| --- | --- | --- |
+| AI request / tool intent | What did the model ask a tool to do? | Redacted structured request, tool arguments, target, hashes. |
+| Observed execution | Did the tool or target system run it? | Target-system status, request/job/transaction ID, redacted result body, result hash. |
+| Observed outcome | What did the target system return, change, or emit? | API receipt, audit-log event, database audit event, deployment record, runtime log, or repository diff. |
+| Supporting visual state | What did a human-facing surface show at that time? | Hash-addressed screenshot/video reference with capture time, source, and retention reference. |
+
+Structured text, receipts, audit events, and diffs are primary because they are searchable, timestamped, and can be correlated. Screenshots are supporting artifacts: use them when the visual state matters, but never substitute them for a target-system receipt or log. Store an artifact hash and immutable storage reference; the dashboard should render a preview only after authorization and preserve the original hash/reference in the case report.
+
+### Attribution gate
+
+`AI_CAUSED` requires all of the following inside the bounded causal window:
+
+1. An AI-requested action maps to the exact failing surface.
+2. A successful observed execution **or** authoritative target artifact confirms the action/outcome.
+3. The chain and evidence manifest are intact enough to support the conclusion.
+
+If the first condition exists but execution/outcome evidence is missing, the engine returns `AI_CONTRIBUTED` or `INSUFFICIENT_EVIDENCE` with an explicit coverage gap. It must not promote intent to a proven effect. The current `attributeIncident` implementation now applies this gate to its local FlightRecords.
+
 ## Target Architecture
 
 ```mermaid
@@ -90,6 +115,8 @@ Use a relational database for the investigation graph. Raw content remains separ
 | AI System | `id`, `workspace_id`, `name`, `application`, `provider`, `model`, `first_seen_at`, `last_seen_at` | Build from observed evidence, not manual claims alone. |
 | Investigation | `id`, `workspace_id`, `title`, `status`, `detected_at`, `last_known_good_at`, `failure_summary`, `root_cause`, `root_cause_status`, `evidence_strength`, `created_at`, `updated_at` | The primary dashboard row. Root cause may be `unknown` while investigating. |
 | Evidence Item | `id`, `workspace_id`, `investigation_id`, `type`, `source`, `occurred_at`, `captured_at`, `payload_hash`, `chain_hash`, `raw_object_key`, `redaction_status`, `integrity_status` | E-IDs in the dashboard come from this entity. |
+| Action Execution | `id`, `evidence_id`, `tool_name`, `target`, `status`, `result_hash`, `external_reference`, `occurred_at` | Separates requested tool intent from observed target execution. |
+| Artifact Reference | `id`, `evidence_id`, `kind`, `content_hash`, `storage_reference`, `captured_at` | Hash-addressed receipt, audit log, diff, runtime log, or screenshot. |
 | Timeline Event | `id`, `investigation_id`, `evidence_id`, `occurred_at`, `kind`, `summary`, `role` | Retained forensic timeline; `role` supports `observed`, `ai_influence`, `failure_origin`, or `gap`. |
 | Evidence Relation | `from_evidence_id`, `to_evidence_id`, `relation_type`, `reason` | Connects causal sequence, shared correlation IDs, and supporting material. |
 | Forensic Note | `id`, `investigation_id`, `ordinal`, `statement`, `status`, `created_at`, `created_by` | Reviewable neutral observation; must link to evidence and cannot mutate it. |
@@ -115,6 +142,8 @@ Every event sent to ingestion must have a stable envelope. Extend the existing F
   "causationId": "parent-event-id-or-null",
   "aiSystem": { "name": "...", "provider": "...", "model": "..." },
   "target": { "kind": "file|table|endpoint|resource", "value": "..." },
+  "actionExecution": { "status": "succeeded|failed|unknown", "externalReference": "request-or-job-id", "result": "redacted target response" },
+  "artifacts": [{ "kind": "api_receipt|audit_log|diff|runtime_log|screenshot", "contentHash": "...", "storageReference": "..." }],
   "payload": { "redacted": true, "...": "schema-specific fields" }
 }
 ```
@@ -125,6 +154,7 @@ Rules:
 - `eventId` makes ingestion idempotent. Retried requests must return the original record, not create duplicates.
 - Capture adapters must propagate W3C trace context or a product correlation ID through model calls, tools, application handlers, and failure detectors.
 - Raw prompts/responses remain opt-in, encrypted, redacted, and access-controlled. Metadata and short excerpts are the default.
+- Capture adapters must record the target-system result for consequential tools where that system exposes a receipt, job ID, audit event, diff, or response; otherwise they emit an explicit outcome-capture gap.
 - A timeline event must link to at least one Evidence Item. A visual gap must exist where the system cannot bridge two events.
 
 ## Investigation Lifecycle
@@ -234,7 +264,7 @@ All routes are workspace-scoped, authenticated, authorization-checked, paginated
 
 ### Case-record export requirements
 
-An export is a forensic package, not a decision or impact report. It must include the investigation scope, time bounds, timeline, evidence inventory and IDs, redaction state, hash/chain verification result, capture gaps, AI-role/root-cause references with their supporting evidence, forensic notes, policy version, retention status, generation time, and audit reference. It must state that it does not determine whether an action was right or wrong, assess financial/business impact, or establish liability.
+An export is a forensic package, not a decision or impact report. It must include the investigation scope, time bounds, timeline, evidence inventory and IDs, requested actions, observed execution results, artifact hashes/references, redaction state, hash/chain verification result, capture gaps, AI-role/root-cause references with their supporting evidence, forensic notes, policy version, retention status, generation time, and audit reference. It must state that it does not determine whether an action was right or wrong, assess financial/business impact, or establish liability.
 
 The server creates a fixed evidence manifest before rendering HTML, PDF, or JSON. The manifest hash, exporter identity, and access event are persisted in `Case Report`; a later download returns the same package or a new, separately audited version. Browser-side export is suitable only for the current demo and must not become the live source of record.
 
