@@ -283,57 +283,57 @@ const DATA = {
   investigations: [
     {
       id: "INV-0024",
-      title: "Incorrect customer refund",
-      system: "Customer Service Agent",
-      app: "Support Console",
+      title: "Incorrect knowledge-base article published",
+      system: "Support Content Agent",
+      app: "Knowledge Base Console",
       model: "GPT-X",
       time: "2026-08-18 09:41",
       status: "Completed",
       attribution: "AI_CONTRIBUTED",
       attributionWhy: "The model produced an incorrect recommendation that influenced the action, but the failure was enabled by missing validation in the agent workflow.",
       evidenceStrength: "Strong",
-      whatHappened: "A customer refund of $8,400 was issued instead of $840 after an AI-assisted customer service workflow executed a refund action.",
-      failure: "Incorrect refund amount was submitted to the payment system.",
-      rootCause: "The refund tool accepted an unvalidated amount produced from incomplete transaction context.",
+      whatHappened: "An outdated support procedure was published after an AI-assisted content workflow approved an unvalidated recommendation.",
+      failure: "An incorrect knowledge-base article was published.",
+      rootCause: "The publication tool accepted an unvalidated recommendation produced from incomplete source context.",
       contributing: [
         "Missing validation before tool execution",
-        "Incomplete transaction context",
+        "Incomplete source context",
         "Agent was allowed to act without approval",
-        "No sanity check on refund amount"
+        "No freshness check on the cited procedure"
       ],
       timeline: [
-        { time: "09:41:03", text: "User requested a refund." },
-        { time: "09:41:04", text: "Customer Service Agent received the task." },
-        { time: "09:41:05", text: "Agent retrieved transaction information." },
-        { time: "09:41:06", text: "Model recommended a refund amount ($8,400).", mark: "ai" },
-        { time: "09:41:07", text: "Refund tool received the amount without validation.", mark: "origin" },
-        { time: "09:41:08", text: "Payment API executed the refund." },
-        { time: "09:41:09", text: "Incorrect $8,400 refund completed." }
+        { time: "09:41:03", text: "Editor requested an article update." },
+        { time: "09:41:04", text: "Support Content Agent received the task." },
+        { time: "09:41:05", text: "Agent retrieved procedure information." },
+        { time: "09:41:06", text: "Model recommended an outdated procedure.", mark: "ai" },
+        { time: "09:41:07", text: "Publication tool accepted the recommendation without validation.", mark: "origin" },
+        { time: "09:41:08", text: "Knowledge-base API published the article." },
+        { time: "09:41:09", text: "Incorrect article became available." }
       ],
       evidence: [
-        { id: "E-1042", title: "User submitted refund request", type: "Observed Evidence", meta: { Source: "Application activity", Timestamp: "09:41:03" } },
-        { id: "E-1043", title: "Agent retrieved transaction record", type: "Observed Evidence", meta: { Source: "Agent activity", Timestamp: "09:41:05" } },
-        { id: "E-1044", title: "Model produced refund recommendation", type: "Observed Evidence", meta: { Model: "GPT-X", Timestamp: "09:41:06" } },
-        { id: "E-1045", title: "Refund tool accepted value without validation", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "09:41:07" } },
-        { id: "E-1046", title: "Payment API executed refund", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:41:08" } }
+        { id: "E-1042", title: "Editor requested article update", type: "Observed Evidence", meta: { Source: "Application activity", Timestamp: "09:41:03" } },
+        { id: "E-1043", title: "Agent retrieved procedure record", type: "Observed Evidence", meta: { Source: "Agent activity", Timestamp: "09:41:05" } },
+        { id: "E-1044", title: "Model recommended a procedure", type: "Observed Evidence", meta: { Model: "GPT-X", Timestamp: "09:41:06" } },
+        { id: "E-1045", title: "Publication tool accepted content without validation", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "09:41:07" } },
+        { id: "E-1046", title: "Knowledge-base API published article", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:41:08" } }
       ],
       findings: [
-        { text: "The model produced an incorrect refund recommendation.", ev: ["E-1044"] },
-        { text: "The agent workflow did not validate the refund amount.", ev: ["E-1045"] },
-        { text: "The refund action was executed automatically.", ev: ["E-1046"] }
+        { text: "The model recommended an outdated procedure.", ev: ["E-1044"] },
+        { text: "The agent workflow did not validate the content before publication.", ev: ["E-1045"] },
+        { text: "The article was published automatically.", ev: ["E-1046"] }
       ],
       facts: {
         observed: [
-          "User submitted a refund request at 09:41:03.",
-          "The model returned a refund amount of $8,400 at 09:41:06.",
-          "The refund tool accepted the amount without a validation step at 09:41:07."
+          "Editor requested an article update at 09:41:03.",
+          "The model recommended a procedure at 09:41:06.",
+          "The publication tool accepted the content without a validation step at 09:41:07."
         ],
         derived: [
-          "The agent acted on an unvalidated refund amount.",
-          "Missing validation in the workflow enabled the incorrect payout."
+          "The agent acted on unvalidated content.",
+          "Missing validation in the workflow enabled the incorrect publication."
         ],
         unknown: [
-          "It cannot be determined whether the customer expected a partial refund."
+          "It cannot be determined whether readers relied on the article before it was corrected."
         ]
       }
     },
@@ -435,7 +435,7 @@ const DATA = {
     }
   ],
   systems: [
-    { name: "Customer Service Agent", app: "Support Console", model: "GPT-X (OpenAI)", tools: ["refund_tool", "txn_lookup"], last: "2026-08-18 09:41", inv: ["INV-0024"] },
+    { name: "Support Content Agent", app: "Knowledge Base Console", model: "GPT-X (OpenAI)", tools: ["publish_article", "procedure_lookup"], last: "2026-08-18 09:41", inv: ["INV-0024"] },
     { name: "Pricing Agent", app: "Commerce Platform", model: "GPT-X (OpenAI)", tools: ["pricing_api", "quote_formatter"], last: "2026-08-18 09:12", inv: ["INV-0025"] },
     { name: "Operations Agent", app: "Ops Console", model: "GPT-X (OpenAI)", tools: ["db_exec", "migration_runner"], last: "2026-08-18 14:20", inv: ["INV-0026"] }
   ]
@@ -482,7 +482,7 @@ function viewOverview() {
     <div class="eyebrow">Forensic Investigation Workbench</div>
     <h1 class="page">AI Forensics &amp; Attribution</h1>
     <p class="lead">Understand what failed. Reconstruct what happened. Determine why.</p>
-    <p class="principle"><b>Evidence first. Attribution second. No assumptions.</b></p>
+    <p class="principle"><b>Evidence first. Attribution second. No assumptions.</b> Determines cause and AI role; it does not assess business impact.</p>
 
     <div class="story">
       <span class="s"><b>Something failed</b></span><span class="a">→</span>
