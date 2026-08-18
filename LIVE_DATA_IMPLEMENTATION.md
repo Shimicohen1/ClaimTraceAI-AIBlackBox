@@ -138,6 +138,80 @@ Rules:
 7. The timeline and its source evidence remain queryable after closure, subject to retention and access policy.
 8. The dashboard reads only persisted investigation projections; it must never recreate conclusions in the browser.
 
+## Investigator-Led Search and Timeline Reconstruction
+
+The primary workflow is not “learn a case from Forensic Notes.” A user must be able to search for a known or suspected incident and open the retained black box around that incident. Forensic Notes are optional evidence-linked navigation aids after the record is assembled; they never become an input that invents a timeline.
+
+### Search workflow
+
+1. An investigator searches by case ID, time range, affected system, AI system/model, tool/action, correlation ID, deployment/commit, source, target (file/table/endpoint), status, or evidence ID.
+2. If the incident is not already a case, the investigator creates one with a required `detectedAt` value and optional last-known-good time, affected target, correlation ID, and failure symptom.
+3. The server scopes the retained evidence to the workspace and selected bounds, verifies the chain, and builds a timeline ordered by occurrence time.
+4. Every timeline row links to its immutable evidence item. Events with no evidence link are displayed only as explicit `gap` records, never inferred steps.
+5. The investigator can narrow or expand the search bounds; every attribution run and report records the exact evidence manifest and query bounds used.
+
+### Required production functions
+
+| Function / endpoint | Responsibility |
+| --- | --- |
+| `searchInvestigations(filters)` / `GET /api/v1/investigations` | Search persisted cases by ID, text, status, system, time, and attribution state. |
+| `searchEvidence(filters)` / `GET /api/v1/evidence` | Search raw evidence by time, correlation ID, provider/model, tool, target, source, hash, and capture status. |
+| `createInvestigation(input)` / `POST /api/v1/investigations` | Create a case from the incident boundary; `detectedAt` is mandatory. |
+| `buildTimeline(investigationId, bounds)` / `GET /api/v1/investigations/{id}/timeline` | Query scoped evidence, order it, join causal/correlation links, verify integrity, and emit only evidence-backed events plus explicit gaps. |
+| `attributeInvestigation(investigationId, manifestId)` / `POST /api/v1/investigations/{id}/attribution-runs` | Call the deterministic attribution engine using the frozen evidence manifest. |
+| `generateCaseReport(investigationId, manifestId)` / `POST /api/v1/investigations/{id}/reports` | Generate the auditable case record from the same frozen evidence manifest. |
+
+The current local primitives are useful building blocks: `readFlightRecords` filters by time, branch, and file; `verifyChain` validates record integrity; and `attributeIncident` evaluates a bounded incident descriptor. The production functions above add persistence, authorization, richer search indexes, correlation, and immutable query manifests.
+
+## Use-Case Catalogue: What Learns and What Does Not
+
+Forensic Notes do not teach the engine automatically. Allowing text notes to rewrite detection logic would create untraceable, unstable behavior. The system instead learns coverage in a controlled way through versioned deterministic rule packs.
+
+- `ingestUseCaseCandidate(source)` records a candidate from an approved public source with its provenance, date, and category.
+- `normalizeUseCaseCandidate(candidate)` maps it to the event signals, required evidence, expected gaps, and a regression fixture.
+- `reviewUseCaseCandidate(candidate, reviewer)` requires a human acceptance/rejection decision.
+- `publishRulePack(version)` activates only reviewed rules after fixture and false-positive tests pass in CI.
+- `evaluateRulePack(manifest, version)` may add evidence-linked reference markers to an investigation, but it cannot replace the captured timeline or issue a causal verdict without `attributeIncident`-style evidence rules.
+
+Use free, cached RSS/Atom feeds and GitHub advisory APIs from named sources such as OWASP GenAI, MITRE ATLAS, NIST, vendor postmortems, and security advisories. Use ETags, daily/weekly schedules, and a human review queue. No paid LLM, autonomous web crawler, or automatic rule activation is required.
+
+## Connecting One Authorized Workstation and Cloud Environment
+
+Monitoring must be explicit, authorized, and scoped. The product should never attempt to inspect an entire workstation or cloud tenant through broad credentials. Begin with one named workstation, one named cloud workspace/account, one AI workflow, and a written capture scope.
+
+### Information and access needed before connection
+
+| Area | Required input or permission | Minimum safe scope |
+| --- | --- | --- |
+| Workstation | Operating system, enrolled user, project directory, approved agent/IDE/CLI tools, local proxy permission, local storage location, retention period. | User-level launch agent or wrapper for the named AI workflow only; no full-disk access. |
+| AI providers | Provider names, approved API base URLs, model SDKs/clients, existing secret-management path, streaming requirement. | Redirect only the named client through the localhost gateway or add the SDK capture hook; never copy provider keys into the dashboard. |
+| Agent and tool layer | Agent framework, MCP servers, tool schemas, allowed tools, action targets, correlation-header support. | Install a wrapper/hook only for the approved agent process and tools. |
+| Application/failure source | Application service identity, failure signal or alert source, log/event access, deployment/commit source. | Read-only event subscription or a minimal webhook that emits a failure-detected event. |
+| Cloud account | Cloud/provider, account/project/subscription ID, region, existing network path, storage/database choice, identity provider. | Dedicated project/resource group and least-privilege service identity; no owner/admin tenant role. |
+| Identity and privacy | SSO/OIDC tenant, approved user groups, data classification, retention/deletion policy, legal/privacy approval. | Investigator/read-only/capture-service roles with workspace isolation. |
+
+### Workstation capture deployment
+
+1. Install the gateway as a user-scoped local service bound to `127.0.0.1`, or add the SDK/agent hook to the named workflow.
+2. Configure the selected client to use the local gateway or hook; retain provider credentials only in the existing OS keychain, secret manager, or runtime environment.
+3. Configure metadata/excerpt capture, redaction additions, disk cap, retention, and the approved provider allowlist in `.blackbox.json`.
+4. Add a correlation ID at the workflow entry point and propagate it into model requests, MCP/tool calls, application requests, and failure events.
+5. Send a harmless test request, verify the redacted FlightRecord, verify its hash chain, and confirm the customer workflow still works if capture is stopped.
+6. For production, buffer a bounded local retry queue and emit a coverage-gap event when capture cannot be delivered; never block the underlying AI request.
+
+### Cloud control-plane deployment
+
+1. Deploy the private application/API, PostgreSQL, object storage, and secrets manager in a dedicated cloud project/resource group and one chosen region.
+2. Create separate least-privilege identities for capture ingestion, correlation worker, dashboard users, and deployment automation.
+3. Place ingestion behind TLS, authenticate capture clients with short-lived credentials or mTLS, enforce workspace ID from identity, and rate-limit requests.
+4. Store queryable redacted metadata in PostgreSQL and encrypted retained payloads only when the capture-depth policy allows them; use object-versioning and lifecycle retention.
+5. Run the timeline/correlation worker from an idempotent job table first. It receives captured events and failure-detected events, creates evidence-backed timelines, and emits explicit gaps.
+6. Enable audit logging, daily chain verification, backup monitoring, alerting on capture gaps, and a tested restore path before real incident onboarding.
+
+### First pilot acceptance test
+
+Use a non-destructive, pre-agreed test workflow on the named workstation: one AI request, one tool or application action, and one synthetic failure-detected event all sharing a correlation ID. The pilot is accepted only when an investigator can search the event, open the timeline, navigate every displayed event to evidence, see chain status and any gaps, run the bounded attribution, and export the same evidence manifest. No conclusion about business impact is generated.
+
 ## API Required by the Dashboard
 
 All routes are workspace-scoped, authenticated, authorization-checked, paginated, and return only redacted content appropriate for the caller's role.

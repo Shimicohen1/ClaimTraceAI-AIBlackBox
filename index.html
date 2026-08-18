@@ -143,6 +143,9 @@
   .demo-tag { display:inline-flex; align-items:center; gap:6px; font-size: 10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--amber); border:1px solid #e0a53a35; background:#e0a53a12; padding:3px 8px; border-radius:6px; }
   .export { border: 1px solid var(--line); border-radius: 8px; background: #ffffff08; color: var(--ink-2); padding: 8px 11px; font-size: 12px; font-weight: 650; }
   .export:hover { background: #ffffff12; color: var(--ink); }
+  .case-search { width: 100%; margin: 22px 0 6px; padding: 12px 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 9px; font-size: 14px; outline: none; }
+  .case-search:focus { border-color: var(--trust); box-shadow: 0 0 0 3px #58b0ff1c; }
+  .search-state { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
 
   /* ---------- Detail view ---------- */
   .back { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 22px; }
@@ -533,11 +536,25 @@ function viewInvestigations() {
   return `
     <div class="eyebrow">Cases</div>
     <h1 class="page" style="font-size:30px">Investigations</h1>
-    <p class="lead" style="font-size:15px">Every case reconstructs a failure from evidence and separates the root cause from the role AI played.</p>
+    <p class="lead" style="font-size:15px">Search a suspected incident, then open its retained timeline and evidence record. Every case separates the failure origin from the role AI played.</p>
+    <input class="case-search" id="case-search" type="search" autocomplete="off" placeholder="Search case ID, failure, AI system, application, root-cause reference, or status" />
+    <div class="search-state" id="case-search-state">${DATA.investigations.length} investigation records</div>
     <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>All investigations</span><span class="demo-tag">Demo data</span></h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Failure</th><th>Time</th><th>AI system</th><th>Root cause</th><th>AI role</th><th>Evidence</th><th>Status</th></tr></thead>
-      <tbody>${rows}</tbody></table></div>`;
+      <tbody id="investigation-rows">${rows}</tbody></table></div>`;
+}
+
+function filterInvestigations(query) {
+  const needle = query.trim().toLowerCase();
+  const matches = DATA.investigations.filter((i) => {
+    const searchable = [i.id, i.title, i.system, i.app, i.rootCause, i.attribution, i.status, i.time].join(" ").toLowerCase();
+    return !needle || searchable.includes(needle);
+  });
+  const rows = document.getElementById("investigation-rows");
+  const state = document.getElementById("case-search-state");
+  if (rows) rows.innerHTML = matches.map(rowFor).join("");
+  if (state) state.textContent = matches.length ? `${matches.length} matching investigation record${matches.length === 1 ? "" : "s"}` : "No matching investigation records. In the live product, create an investigation with a detection time to reconstruct a new timeline.";
 }
 
 function viewDetail(id) {
@@ -836,6 +853,11 @@ document.addEventListener("click", (e) => {
     e.preventDefault();
     flashEvidence(evref.dataset.ev);
   }
+});
+
+document.addEventListener("input", (e) => {
+  const input = e.target.closest("#case-search");
+  if (input) filterInvestigations(input.value);
 });
 
 function flashEvidence(id) {
