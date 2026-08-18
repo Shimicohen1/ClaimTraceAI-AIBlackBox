@@ -141,6 +141,8 @@
   .st-awaiting { color: var(--muted); }
 
   .demo-tag { display:inline-flex; align-items:center; gap:6px; font-size: 10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--amber); border:1px solid #e0a53a35; background:#e0a53a12; padding:3px 8px; border-radius:6px; }
+  .export { border: 1px solid var(--line); border-radius: 8px; background: #ffffff08; color: var(--ink-2); padding: 8px 11px; font-size: 12px; font-weight: 650; }
+  .export:hover { background: #ffffff12; color: var(--ink); }
 
   /* ---------- Detail view ---------- */
   .back { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 22px; }
@@ -203,7 +205,7 @@
   .ev-item .etype { font-size: 11px; color: var(--trust); border: 1px solid #58b0ff30; background: #58b0ff12; padding: 3px 9px; border-radius: 6px; white-space: nowrap; }
   .ev-item:target, .ev-item.flash { border-color: var(--trust); box-shadow: 0 0 0 3px #58b0ff22; }
 
-  /* ---------- Facts vs findings ---------- */
+  /* ---------- Facts vs forensic notes ---------- */
   .fvf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 14px; }
   @media (max-width: 820px) { .fvf { grid-template-columns: 1fr; } }
   .fcol { border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 16px 18px; background: var(--panel); }
@@ -221,12 +223,12 @@
   .factors { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
   .factor { font-size: 13.5px; color: var(--ink-2); padding: 10px 14px; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 10px; border-left: 3px solid var(--amber); }
 
-  /* ---------- Findings ---------- */
-  .findings { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
-  .finding { padding: 16px 18px; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 12px; }
-  .finding .fnum { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
-  .finding .ftext { font-size: 14.5px; color: var(--ink); margin: 6px 0 10px; }
-  .finding .fev { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  /* ---------- Forensic notes ---------- */
+  .notes { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .note { padding: 16px 18px; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 12px; }
+  .note .fnum { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .note .ftext { font-size: 14.5px; color: var(--ink); margin: 6px 0 10px; }
+  .note .fev { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
   .evref { font-family: var(--mono); font-size: 12px; color: var(--trust); border: 1px solid #58b0ff30; background: #58b0ff10; padding: 2px 8px; border-radius: 6px; cursor: pointer; }
   .evref:hover { background: #58b0ff20; }
 
@@ -261,7 +263,7 @@
       <a data-view="investigations"><span class="ic">▤</span> Investigations</a>
       <a data-view="evidence"><span class="ic">◈</span> Evidence</a>
       <a data-view="systems"><span class="ic">⬡</span> AI Systems</a>
-      <a data-view="findings"><span class="ic">✓</span> Findings</a>
+      <a data-view="notes"><span class="ic">✓</span> Forensic Notes</a>
       <a data-view="system"><span class="ic">⚙</span> System / Integrations</a>
     </nav>
     <div class="side-foot">
@@ -317,7 +319,7 @@ const DATA = {
         { id: "E-1045", title: "Publication tool accepted content without validation", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "09:41:07" } },
         { id: "E-1046", title: "Knowledge-base API published article", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:41:08" } }
       ],
-      findings: [
+      notes: [
         { text: "The model recommended an outdated procedure.", ev: ["E-1044"] },
         { text: "The agent workflow did not validate the content before publication.", ev: ["E-1045"] },
         { text: "The article was published automatically.", ev: ["E-1046"] }
@@ -370,7 +372,7 @@ const DATA = {
         { id: "E-2012", title: "Pricing API returned value set", type: "Observed Evidence", meta: { Source: "API call", Timestamp: "09:12:12" } },
         { id: "E-2013", title: "Model formatted quote from returned values", type: "Observed Evidence", meta: { Model: "GPT-X", Timestamp: "09:12:13" } }
       ],
-      findings: [
+      notes: [
         { text: "The pricing API returned stale values.", ev: ["E-2012"] },
         { text: "The model formatted a quote from stale inputs.", ev: ["E-2013"] }
       ],
@@ -417,7 +419,7 @@ const DATA = {
         { id: "E-3002", title: "Agent received task", type: "Observed Evidence", meta: { Source: "Agent activity", Timestamp: "14:20:05" } },
         { id: "E-3003", title: "Partial tool-call record (arguments missing)", type: "Observed Evidence", meta: { Source: "Tool call", Timestamp: "14:20:11" } }
       ],
-      findings: [
+      notes: [
         { text: "An AI-assisted database operation occurred, but its arguments were not captured.", ev: ["E-3003"] }
       ],
       facts: {
@@ -563,10 +565,10 @@ function viewDetail(id) {
     </div>`;
   }).join("");
 
-  const findings = i.findings.map((f, n) => {
+  const notes = i.notes.map((f, n) => {
     const refs = f.ev.map((r) => `<span class="evref" data-ev="${r}">${r}</span>`).join(" ");
-    return `<div class="finding">
-      <div class="fnum">Finding ${String(n + 1).padStart(2, "0")}</div>
+    return `<div class="note">
+      <div class="fnum">Forensic note ${String(n + 1).padStart(2, "0")}</div>
       <div class="ftext">${esc(f.text)}</div>
       <div class="fev">Evidence: ${refs}</div>
     </div>`;
@@ -587,6 +589,7 @@ function viewDetail(id) {
         ${stBadge(i.status)}
         <div class="time">${esc(i.time)}</div>
         ${evBadge(i.evidenceStrength)} evidence
+        <button class="export" type="button" data-export="${i.id}">Export case record</button>
       </div>
     </div>
 
@@ -616,18 +619,18 @@ function viewDetail(id) {
     <h2 class="sec">Evidence</h2>
     <div class="ev-list">${evItems}</div>
 
-    <h2 class="sec">Facts vs findings</h2>
+    <h2 class="sec">Facts vs forensic notes</h2>
     <div class="fvf">
       <div class="fcol observed"><h4>Observed evidence</h4><div class="hint">Directly captured facts</div><ul>${li(i.facts.observed)}</ul></div>
-      <div class="fcol derived"><h4>Derived findings</h4><div class="hint">Conclusions from multiple items</div><ul>${li(i.facts.derived)}</ul></div>
+      <div class="fcol derived"><h4>Forensic notes</h4><div class="hint">Evidence-linked observations</div><ul>${li(i.facts.derived)}</ul></div>
       <div class="fcol unknown"><h4>Unknown</h4><div class="hint">Evidence cannot establish</div><ul>${li(i.facts.unknown)}</ul></div>
     </div>
 
     <h2 class="sec">Contributing factors</h2>
     <div class="factors">${factors}</div>
 
-    <h2 class="sec">Findings</h2>
-    <div class="findings">${findings}</div>`;
+    <h2 class="sec">Forensic notes</h2>
+    <div class="notes">${notes}</div>`;
 }
 
 function viewEvidence() {
@@ -649,6 +652,23 @@ function viewEvidence() {
     <div class="ev-list">${rows}</div>`;
 }
 
+function exportCaseRecord(id) {
+  const i = DATA.investigations.find((x) => x.id === id);
+  if (!i) return;
+  const list = (items) => `<ul>${items.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`;
+  const timeline = i.timeline.map((event) => `<tr><td>${esc(event.time)}</td><td>${esc(event.mark || "observed")}</td><td>${esc(event.text)}</td></tr>`).join("");
+  const evidence = i.evidence.map((item) => `<tr><td>${esc(item.id)}</td><td>${esc(item.title)}</td><td>${esc(Object.entries(item.meta).map(([key, value]) => `${key}: ${value}`).join(" · "))}</td></tr>`).join("");
+  const reportNotes = i.notes.map((note, index) => `<li>Note ${String(index + 1).padStart(2, "0")}: ${esc(note.text)} <span>References: ${esc(note.ev.join(", "))}</span></li>`).join("");
+  const report = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(i.id)} forensic case record</title><style>body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202c;max-width:960px;margin:42px auto;padding:0 24px}h1{font-size:30px;margin:0 0 4px}h2{font-size:14px;text-transform:uppercase;letter-spacing:.09em;border-bottom:1px solid #d8dee8;padding-bottom:8px;margin-top:34px}p,li{color:#354154}.meta{color:#64748b}.notice{padding:14px 16px;border-left:4px solid #64748b;background:#f4f6f8}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #d8dee8}th{font-size:12px;color:#64748b;text-transform:uppercase}span{color:#64748b;font-size:13px}</style><body><div class="meta">ClaimTraceAI (AIBlackBox) · Forensic Case Record · ${esc(i.id)}</div><h1>${esc(i.title)}</h1><p class="meta">AI system: ${esc(i.system)} · Application: ${esc(i.app)} · Investigation status: ${esc(i.status)} · Exported: ${new Date().toISOString()}</p><div class="notice">This record preserves captured reference data for later investigation. It does not determine whether an action was right or wrong, calculate business impact, financial loss, or liability.</div><h2>Investigation scope</h2><p><b>Observed failure:</b> ${esc(i.failure)}<br><b>What was observed:</b> ${esc(i.whatHappened)}<br><b>Root-cause reference:</b> ${esc(i.rootCause)}<br><b>AI role reference:</b> ${esc(ATTR_LABEL[i.attribution])}<br><b>Evidence strength:</b> ${esc(i.evidenceStrength)}</p><h2>Retained timeline</h2><table><thead><tr><th>Time</th><th>Record role</th><th>Event</th></tr></thead><tbody>${timeline}</tbody></table><h2>Evidence inventory</h2><table><thead><tr><th>Evidence ID</th><th>Captured item</th><th>Reference metadata</th></tr></thead><tbody>${evidence}</tbody></table><h2>Forensic notes</h2><ul>${reportNotes}</ul><h2>Contributing references</h2>${list(i.contributing)}<h2>Known gaps / unknowns</h2>${list(i.facts.unknown)}<h2>Integrity and handling</h2><p>Evidence strength: ${esc(i.evidenceStrength)}. Chain integrity: unavailable in this static demo. In the live product, the export must include evidence hashes, chain-verification result, retention status, capture gaps, policy version, and an audit reference.</p></body></html>`;
+  const blob = new Blob([report], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${i.id}-forensic-case-record.html`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function viewSystems() {
   const rows = DATA.systems.map((s) => `
     <tr>
@@ -668,23 +688,23 @@ function viewSystems() {
       <tbody>${rows}</tbody></table></div>`;
 }
 
-function viewFindings() {
+function viewNotes() {
   const rows = DATA.investigations.flatMap((i) =>
-    i.findings.map((f, n) => ({ inv: i.id, title: i.title, n: n + 1, ...f }))
+    i.notes.map((f, n) => ({ inv: i.id, title: i.title, n: n + 1, ...f }))
   ).map((f) => {
     const refs = f.ev.map((r) => `<span class="evref" data-ev="${r}" data-open="${f.inv}">${r}</span>`).join(" ");
-    return `<div class="finding">
-      <div class="fnum">${f.inv} · Finding ${String(f.n).padStart(2, "0")}</div>
+    return `<div class="note">
+      <div class="fnum">${f.inv} · Forensic note ${String(f.n).padStart(2, "0")}</div>
       <div class="ftext">${esc(f.text)}</div>
       <div class="fev">Evidence: ${refs} <span class="muted">— from “${esc(f.title)}”</span></div>
     </div>`;
   }).join("");
   return `
-    <div class="eyebrow">Derived conclusions</div>
-    <h1 class="page" style="font-size:30px">Findings</h1>
-    <p class="lead" style="font-size:15px">Conclusions derived from evidence. Each finding links back to the records that support it.</p>
-    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>All findings</span><span class="demo-tag">Demo data</span></h2>
-    <div class="findings">${rows}</div>`;
+    <div class="eyebrow">Evidence-linked observations</div>
+    <h1 class="page" style="font-size:30px">Forensic Notes</h1>
+    <p class="lead" style="font-size:15px">Reviewable observations that organize the record. They do not replace, modify, or judge the captured evidence.</p>
+    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Forensic notes across investigations</span><span class="demo-tag">Demo data</span></h2>
+    <div class="notes">${rows}</div>`;
 }
 
 function viewSystem() {
@@ -769,7 +789,7 @@ const VIEWS = {
   investigations: viewInvestigations,
   evidence: viewEvidence,
   systems: viewSystems,
-  findings: viewFindings,
+  notes: viewNotes,
   system: viewSystem
 };
 
@@ -793,6 +813,13 @@ document.addEventListener("click", (e) => {
   const nav = e.target.closest("[data-view]");
   const open = e.target.closest("[data-open]");
   const evref = e.target.closest("[data-ev]");
+  const exportButton = e.target.closest("[data-export]");
+
+  if (exportButton && exportButton.dataset.export) {
+    e.preventDefault();
+    exportCaseRecord(exportButton.dataset.export);
+    return;
+  }
 
   if (open && open.dataset.open) {
     e.preventDefault();

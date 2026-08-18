@@ -42,6 +42,8 @@ Not yet implemented:
 ## Product Rules That the Live System Must Preserve
 
 - Evidence first. Derived conclusions must always link to immutable evidence IDs.
+- **Evidence** is an immutable captured source record: the event, source, timestamps, redaction state, hashes, chain state, and retained payload reference. It is never rewritten to fit a narrative.
+- **Forensic Notes** are optional, reviewable navigation aids that describe what the evidence set shows and link to exact evidence IDs. They do not alter evidence, label behavior as right or wrong, or establish impact, liability, or truth beyond the captured record.
 - Root Cause and AI Attribution are independent fields. Do not infer one from the other.
 - Business impact and financial loss are outside the attribution model and must not affect its verdict.
 - Unknown remains Unknown. The API must return missing evidence and capture gaps rather than manufacture a conclusion.
@@ -90,11 +92,12 @@ Use a relational database for the investigation graph. Raw content remains separ
 | Evidence Item | `id`, `workspace_id`, `investigation_id`, `type`, `source`, `occurred_at`, `captured_at`, `payload_hash`, `chain_hash`, `raw_object_key`, `redaction_status`, `integrity_status` | E-IDs in the dashboard come from this entity. |
 | Timeline Event | `id`, `investigation_id`, `evidence_id`, `occurred_at`, `kind`, `summary`, `role` | Retained forensic timeline; `role` supports `observed`, `ai_influence`, `failure_origin`, or `gap`. |
 | Evidence Relation | `from_evidence_id`, `to_evidence_id`, `relation_type`, `reason` | Connects causal sequence, shared correlation IDs, and supporting material. |
-| Finding | `id`, `investigation_id`, `ordinal`, `statement`, `status`, `created_at` | Must be supported by one or more evidence links. |
-| Finding Evidence | `finding_id`, `evidence_id`, `support_type` | Makes finding-to-evidence navigation real. |
+| Forensic Note | `id`, `investigation_id`, `ordinal`, `statement`, `status`, `created_at`, `created_by` | Reviewable neutral observation; must link to evidence and cannot mutate it. |
+| Note Evidence | `note_id`, `evidence_id`, `reference_type` | Makes note-to-evidence navigation real. |
 | Contributing Factor | `id`, `investigation_id`, `statement`, `status`, `evidence_basis` | Must never be merged into root cause. |
 | Attribution Run | `id`, `investigation_id`, `verdict`, `headline`, `policy_version`, `chain_intact`, `created_at`, `created_by` | Store the actual analysis output, including gaps. |
 | Attribution Evidence | `attribution_run_id`, `evidence_id`, `role`, `reason` | Records exactly why a verdict was returned. |
+| Case Report | `id`, `investigation_id`, `format`, `evidence_manifest_hash`, `generated_at`, `generated_by`, `audit_event_id` | Immutable export manifest; generated from persisted case state. |
 | Audit Event | `id`, `workspace_id`, `actor_id`, `action`, `entity_type`, `entity_id`, `at` | Covers reads of sensitive evidence and all conclusion edits. |
 
 ## Evidence and Correlation Contract
@@ -131,7 +134,7 @@ Rules:
 3. The worker creates Timeline Events from source evidence and explicitly marks missing coverage.
 4. An analyst may attach evidence, correct time boundaries, and record facts. These edits are audited.
 5. The attribution service runs against the investigation's fixed evidence set and stores an Attribution Run.
-6. Root cause, contributing factors, and findings are recorded separately. Each finding must contain direct evidence links.
+6. Root cause, contributing factors, and forensic notes are recorded separately. Every note must contain direct evidence links.
 7. The timeline and its source evidence remain queryable after closure, subject to retention and access policy.
 8. The dashboard reads only persisted investigation projections; it must never recreate conclusions in the browser.
 
@@ -147,11 +150,19 @@ All routes are workspace-scoped, authenticated, authorization-checked, paginated
 | `GET /api/v1/investigations/{id}` | Case header, What Happened, Failure, Root Cause, Attribution, gaps. | Investigation detail. |
 | `GET /api/v1/investigations/{id}/timeline` | Ordered event projection with evidence links and `observed`/`ai_influence`/`failure_origin`/`gap` roles. | Reconstruction timeline. |
 | `GET /api/v1/investigations/{id}/evidence` | Evidence items with source, model/provider, timestamps, integrity, and strength basis. | Detail evidence list. |
-| `GET /api/v1/investigations/{id}/findings` | Findings with evidence references. | Detail findings. |
+| `GET /api/v1/investigations/{id}/notes` | Reviewable forensic notes with evidence references. | Detail and cross-case notes view. |
 | `POST /api/v1/investigations/{id}/attribution-runs` | Run deterministic attribution on a selected evidence/time window. | Analyst action, not an automatic browser calculation. |
+| `POST /api/v1/investigations/{id}/reports` | Generate an audited HTML/PDF/JSON case-record export from a fixed evidence manifest. | Export case record control. |
+| `GET /api/v1/reports/{id}` | Download a previously generated, audited export. | Report retrieval. |
 | `GET /api/v1/evidence` | Cross-investigation evidence search. | Evidence view. |
 | `GET /api/v1/ai-systems` | Observed AI-system inventory and related investigations. | AI Systems view. |
-| `GET /api/v1/findings` | Cross-investigation findings with supporting evidence. | Findings view. |
+| `GET /api/v1/notes` | Cross-investigation forensic notes with supporting evidence. | Forensic Notes view. |
+
+### Case-record export requirements
+
+An export is a forensic package, not a decision or impact report. It must include the investigation scope, time bounds, timeline, evidence inventory and IDs, redaction state, hash/chain verification result, capture gaps, AI-role/root-cause references with their supporting evidence, forensic notes, policy version, retention status, generation time, and audit reference. It must state that it does not determine whether an action was right or wrong, assess financial/business impact, or establish liability.
+
+The server creates a fixed evidence manifest before rendering HTML, PDF, or JSON. The manifest hash, exporter identity, and access event are persisted in `Case Report`; a later download returns the same package or a new, separately audited version. Browser-side export is suitable only for the current demo and must not become the live source of record.
 
 ## Dashboard Changes Required
 
@@ -231,7 +242,7 @@ Done when:
 5. Build `GET /api/v1/investigations` and `GET /api/v1/investigations/{id}` from persisted projections.
 6. Convert the private dashboard from embedded demo data to typed API calls.
 7. Add correlation worker, then source-specific capture adapters.
-8. Add persistent findings/attribution workflows and audit trails.
+8. Add persistent forensic-note, attribution, and case-record export workflows with audit trails.
 9. Conduct security, recovery, and end-to-end evidence traceability validation before onboarding real users.
 
 ## Explicit Non-Goals for the First Live Release
