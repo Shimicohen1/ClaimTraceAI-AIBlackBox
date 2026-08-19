@@ -31,6 +31,7 @@ Already implemented in the private engine:
 - Gateway capture for supported model-provider traffic and a local CLI reader.
 - **AIBlackBox Engine v1:** deterministic evidence-routing tags are evaluated at capture time and retained in the hash chain. Tags identify observable conditions such as destructive action intent, high-impact targets, observed execution, missing execution outcomes, authoritative artifacts, capture errors, and correlation gaps; they do not assign blame.
 - **Correlation foundation:** capture accepts `correlationId`; the gateway reads `x-aiblackbox-correlation-id`, `x-correlation-id`, `x-request-id`, or `traceparent`; local/API/CLI reads can filter records by correlation ID.
+- **Validated pilot configuration:** project-local `.blackbox.json` supports `captureDepth`, `tool`, `upstream`, `port`, and `maxBodyBytes`. Unknown fields and invalid values fail startup; environment variables remain explicit overrides. The configuration validator runs in `validate:all`.
 
 Not yet implemented:
 
