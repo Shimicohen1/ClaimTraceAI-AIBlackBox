@@ -24,6 +24,7 @@
     --origin: #f8604f;    /* failure origin / critical */
     --amber: #e0a53a;     /* contributed / moderate */
     --teal: #3fd0b0;      /* non-AI root cause / resolved */
+    --danger: #e05a5a;    /* disconnected / broken */
     --green: #46c96a;
 
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -74,6 +75,25 @@
   .side-foot { margin-top: auto; font-size: 11px; color: var(--muted-2); line-height: 1.5; }
   .side-foot .demo { display:inline-flex; align-items:center; gap:6px; color: var(--amber); font-weight:600; }
   .side-foot .demo::before { content:""; width:6px; height:6px; border-radius:50%; background: var(--amber); }
+  .conn-banner { border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px; font-size: 11.5px; margin-bottom: 12px; background: #ffffff06; }
+  .conn-banner .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px; vertical-align:1px; }
+  .conn-banner .title { font-weight: 700; letter-spacing: .02em; }
+  .conn-banner .detail { color: var(--muted-2); margin-top: 4px; line-height: 1.5; }
+  .conn-banner .comp { display:flex; justify-content:space-between; gap:8px; margin-top:5px; font-size:11px; color: var(--muted); }
+  .conn-banner .comp span.st { font-weight:600; }
+  .conn-connected { border-color: #3fd0b038; background: #3fd0b00c; }
+  .conn-connected .dot { background: var(--teal); }
+  .conn-connected .title { color: var(--teal); }
+  .conn-degraded { border-color: #e0a53a38; background: #e0a53a0c; }
+  .conn-degraded .dot { background: var(--amber); }
+  .conn-degraded .title { color: var(--amber); }
+  .conn-disconnected { border-color: #e05a5a38; background: #e05a5a0c; }
+  .conn-disconnected .dot { background: var(--danger); }
+  .conn-disconnected .title { color: var(--danger); }
+  .conn-none { border-color: var(--line-soft); }
+  .conn-none .dot { background: var(--muted-2); }
+  .conn-none .title { color: var(--muted-2); }
+  .st-ok { color: var(--teal); } .st-stale { color: var(--amber); } .st-bad { color: var(--danger); }
 
   main { padding: 30px 40px 90px; max-width: 1180px; }
   @media (max-width: 900px) {
@@ -283,6 +303,10 @@
       <a data-view="notes"><span class="ic">✓</span> Forensic Notes</a>
       <a data-view="system"><span class="ic">⚙</span> System / Integrations</a>
     </nav>
+    <div id="connection-banner" class="conn-banner conn-none">
+      <div class="title"><span class="dot"></span>Checking connection…</div>
+      <div class="detail">Looking for a live capture environment.</div>
+    </div>
     <div class="side-foot">
       <div class="demo">Demo data</div>
       <div style="margin-top:6px">Illustrative cases. The capture &amp; attribution engine is real; these specific investigations are mock records.</div>
@@ -835,6 +859,14 @@ function viewSystem() {
 
     <div class="cards">
       <div class="card">
+        <h3>Live connection status</h3>
+        <p class="muted" style="font-size:12.5px;margin:0 0 8px">Per capture point, from the last heartbeat this environment reported. If onboarding worked but a capture point later stops, it moves from "Connected" to "Disconnected" here — not silently.</p>
+        <div id="live-health-components">Checking…</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
         <h3>Integrations</h3>
         <p>Point one capture at your AI:</p>
         <ul>
@@ -940,6 +972,81 @@ function flashEvidence(id) {
   el.classList.add("flash");
   setTimeout(() => el.classList.remove("flash"), 1400);
 }
+
+const COMPONENT_LABEL = {
+  gateway: "Gateway (Copilot / model traffic)",
+  mcp: "MCP servers (endpoint)",
+  agent: "Agents (Copilot Agents / Studio)",
+  m365_audit: "M365 audit log poller",
+  database: "Database",
+  storage: "Object storage"
+};
+
+function stateClass(state) {
+  if (state === "connected") return "st-ok";
+  if (state === "stale") return "st-stale";
+  return "st-bad";
+}
+
+function renderHealthComponents(components) {
+  const el = document.getElementById("live-health-components");
+  if (!el) return;
+  if (!components.length) {
+    el.innerHTML = '<div class="kv"><span class="k">No capture point has reported in yet</span><span class="warn">Not connected</span></div>';
+    return;
+  }
+  el.innerHTML = components.map((c) => {
+    const label = COMPONENT_LABEL[c.component] || c.component;
+    const age = c.secondsSinceLastSeen === null ? "never" : c.secondsSinceLastSeen + "s ago";
+    return '<div class="kv"><span class="k">' + esc(label) + " — " + esc(c.label) + '</span><span class="' + stateClass(c.state) + '">' + esc(c.state) + " · last seen " + age + "</span></div>";
+  }).join("");
+}
+
+function renderConnectionBanner(health, reachable) {
+  const banner = document.getElementById("connection-banner");
+  if (!banner) return;
+
+  if (!reachable) {
+    banner.className = "conn-banner conn-none";
+    banner.innerHTML = '<div class="title"><span class="dot"></span>No live environment connected</div><div class="detail">This is the demo dashboard, or no capture point has reported a heartbeat yet. Run onboarding, then this turns green once the gateway/MCP/agents connect.</div>';
+    return;
+  }
+
+  if (health.neverConnected) {
+    banner.className = "conn-banner conn-none";
+    banner.innerHTML = '<div class="title"><span class="dot"></span>Onboarding not started</div><div class="detail">No gateway, MCP monitor, or agent has reported in from this environment yet.</div>';
+    return;
+  }
+
+  if (health.allConnected) {
+    banner.className = "conn-banner conn-connected";
+    banner.innerHTML = '<div class="title"><span class="dot"></span>All connected</div><div class="detail">' + health.components.length + ' capture point' + (health.components.length === 1 ? "" : "s") + ' reporting normally.</div>';
+    return;
+  }
+
+  const broken = health.components.filter((c) => c.state !== "connected");
+  const hasHardFailure = broken.some((c) => c.state === "disconnected" || c.state === "error");
+  banner.className = hasHardFailure ? "conn-banner conn-disconnected" : "conn-banner conn-degraded";
+  const headline = hasHardFailure ? "Connection broken" : "Degraded — check capture points";
+  banner.innerHTML = '<div class="title"><span class="dot"></span>' + headline + '</div><div class="detail">' + broken.length + " of " + health.components.length + ' capture points need attention.</div>' +
+    broken.map((c) => '<div class="comp"><span>' + esc(COMPONENT_LABEL[c.component] || c.component) + " (" + esc(c.label) + ')</span><span class="st ' + stateClass(c.state) + '">' + esc(c.state) + "</span></div>").join("");
+}
+
+async function refreshConnectionStatus() {
+  try {
+    const res = await fetch("api/blackbox/health", { cache: "no-store" });
+    if (!res.ok) throw new Error("status " + res.status);
+    const health = await res.json();
+    renderConnectionBanner(health, true);
+    renderHealthComponents(health.components || []);
+  } catch (err) {
+    renderConnectionBanner(null, false);
+    renderHealthComponents([]);
+  }
+}
+
+refreshConnectionStatus();
+setInterval(refreshConnectionStatus, 20000);
 
 render("overview");
 </script>
