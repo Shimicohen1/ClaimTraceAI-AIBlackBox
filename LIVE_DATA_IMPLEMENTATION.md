@@ -29,6 +29,8 @@ Already implemented in the private engine:
 - Local FlightRecord ingestion, query, and deterministic evidence-first attribution.
 - Local JSONL evidence storage, redaction, bounded storage, and hash chaining.
 - Gateway capture for supported model-provider traffic and a local CLI reader.
+- **AIBlackBox Engine v1:** deterministic evidence-routing tags are evaluated at capture time and retained in the hash chain. Tags identify observable conditions such as destructive action intent, high-impact targets, observed execution, missing execution outcomes, authoritative artifacts, capture errors, and correlation gaps; they do not assign blame.
+- **Correlation foundation:** capture accepts `correlationId`; the gateway reads `x-aiblackbox-correlation-id`, `x-correlation-id`, `x-request-id`, or `traceparent`; local/API/CLI reads can filter records by correlation ID.
 
 Not yet implemented:
 
@@ -38,6 +40,8 @@ Not yet implemented:
 - AI-system inventory derived from observed evidence.
 - Dashboard data API, dashboard authentication, or a production deployment.
 - A live dashboard client; the current file embeds `const DATA = ...` demo records.
+
+The current tagged-correlation path is local-only and is not yet a multi-tenant production timeline service. It is the first controlled-pilot building block: capture → correlation ID → AIBlackBox evidence tags → chain verification → local/API/CLI retrieval.
 
 ## Product Rules That the Live System Must Preserve
 
