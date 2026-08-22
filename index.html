@@ -73,8 +73,8 @@
   nav.side a.active .ic { color: var(--trust); opacity: 1; }
 
   .side-foot { margin-top: auto; font-size: 11px; color: var(--muted-2); line-height: 1.5; }
-  .side-foot .demo { display:inline-flex; align-items:center; gap:6px; color: var(--amber); font-weight:600; }
-  .side-foot .demo::before { content:""; width:6px; height:6px; border-radius:50%; background: var(--amber); }
+  .side-foot .mode { display:inline-flex; align-items:center; gap:6px; color: var(--amber); font-weight:600; }
+  .side-foot .mode::before { content:""; width:6px; height:6px; border-radius:50%; background: var(--amber); }
   .conn-banner { border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px; font-size: 11.5px; margin-bottom: 12px; background: #ffffff06; }
   .conn-banner .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px; vertical-align:1px; }
   .conn-banner .title { font-weight: 700; letter-spacing: .02em; }
@@ -283,6 +283,55 @@
   .kv .k { color: var(--muted); }
   .ok { color: var(--teal); } .warn { color: var(--amber); }
   .subnote { font-size: 12px; color: var(--muted-2); margin-top: 10px; }
+  .onboard-steps { margin: 10px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; }
+  .onboard-steps li { margin: 5px 0; }
+  .onboard-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--trust);
+    border: 1px solid #58b0ff30;
+    background: #58b0ff12;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .onboard-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .onboard-btn {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff08;
+    color: var(--ink-2);
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .onboard-btn:hover { background: #ffffff12; color: var(--ink); }
+  .onboard-status { margin-top: 12px; border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px; }
+  .onboard-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .onboard-row:last-child { border-bottom: 0; }
+  .onboard-step { color: var(--ink-2); font-size: 12.5px; }
+  .onboard-step-state { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .onboard-id { margin-top: 8px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .step-idle { color: var(--muted); }
+  .step-running { color: var(--amber); }
+  .step-ok { color: var(--teal); }
+  .step-fail { color: var(--danger); }
+  .onboard-msg { margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .onboard-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--muted); cursor: pointer; margin-top: 8px; padding: 4px 6px; border-radius: 6px; transition: background .15s, color .15s; }
+  .onboard-toggle:hover { color: var(--ink-2); background: #ffffff08; }
+  .onboard-toggle::before { content: '▼'; display: inline-block; transition: transform .2s; font-size: 9px; }
+  .onboard-toggle.collapsed::before { transform: rotate(-90deg); }
+  .onboard-detail-group { margin-top: 8px; border-top: 1px solid var(--line-soft); padding-top: 8px; max-height: 1000px; overflow: hidden; transition: max-height .3s ease-out, opacity .2s ease-out; opacity: 1; }
+  .onboard-detail-group.hidden { max-height: 0; opacity: 0; padding-top: 0; border-top: none; }
+  .onboard-detail-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .onboard-detail-line { font-size: 12px; color: var(--ink-2); line-height: 1.45; }
+  .onboard-detail-line + .onboard-detail-line { margin-top: 3px; }
+  .onboard-check-ok { color: var(--teal); }
+  .onboard-check-fail { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -308,8 +357,8 @@
       <div class="detail">Looking for a live capture environment.</div>
     </div>
     <div class="side-foot">
-      <div class="demo">Demo data</div>
-      <div style="margin-top:6px">Illustrative cases. The capture &amp; attribution engine is real; these specific investigations are mock records.</div>
+      <div class="mode">Production (Single-Tenant)</div>
+      <div style="margin-top:6px">This environment is connected to one tenant/workstation scope. Multi-tenant SaaS scale-out uses the same APIs and controls behind the scenes.</div>
     </div>
   </aside>
 
@@ -318,10 +367,10 @@
 
 <script>
 /* ============================================================
-   Demo dataset — clearly illustrative.
-   The forensic engine (capture + attribution) is real; these
-   specific investigations are mock records for the UI.
-   ============================================================ */
+  Single-tenant production sample records for this environment.
+  The forensic engine (capture + attribution) is real; sample
+  records are kept to demonstrate end-to-end operator flow.
+  ============================================================ */
 const DATA = {
   investigations: [
     {
@@ -584,7 +633,7 @@ function viewOverview() {
     </div>
 
     <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center">
-      <span>Recent investigations</span> <span class="demo-tag">Demo data</span>
+      <span>Recent investigations</span> <span class="demo-tag">Single-tenant production</span>
     </h2>
     <div class="tablewrap">
       <table>
@@ -616,7 +665,7 @@ function viewInvestigations() {
     <p class="lead" style="font-size:15px">Search a suspected incident, then open its retained timeline and evidence record. Every case separates the failure origin from the role AI played.</p>
     <input class="case-search" id="case-search" type="search" autocomplete="off" placeholder="Search case ID, failure, AI system, application, root-cause reference, or status" />
     <div class="search-state" id="case-search-state">${DATA.investigations.length} investigation records</div>
-    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>All investigations</span><span class="demo-tag">Demo data</span></h2>
+    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>All investigations</span><span class="demo-tag">Single-tenant production</span></h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Failure</th><th>Time</th><th>AI system</th><th>Root cause</th><th>AI role</th><th>Evidence</th><th>Status</th></tr></thead>
       <tbody id="investigation-rows">${rows}</tbody></table></div>`;
@@ -761,7 +810,7 @@ function viewEvidence() {
     <div class="eyebrow">Traceable facts</div>
     <h1 class="page" style="font-size:30px">Evidence</h1>
     <p class="lead" style="font-size:15px">Directly captured facts. Every conclusion in an investigation traces back to items here.</p>
-    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Observed evidence across investigations</span><span class="demo-tag">Demo data</span></h2>
+    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Observed evidence across investigations</span><span class="demo-tag">Single-tenant production</span></h2>
     <div class="ev-list">${rows}</div>`;
 }
 
@@ -796,7 +845,7 @@ function viewSystems() {
     <div class="eyebrow">Observed in evidence</div>
     <h1 class="page" style="font-size:30px">AI Systems</h1>
     <p class="lead" style="font-size:15px">Agents and models observed while investigating failures — scoped to forensics, not governance.</p>
-    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Systems inventory</span><span class="demo-tag">Demo data</span></h2>
+    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Systems inventory</span><span class="demo-tag">Single-tenant production</span></h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Agent</th><th>Model / provider</th><th>Tools used</th><th>Last activity</th><th>Investigations</th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
@@ -817,7 +866,7 @@ function viewNotes() {
     <div class="eyebrow">Evidence-linked observations</div>
     <h1 class="page" style="font-size:30px">Forensic Notes</h1>
     <p class="lead" style="font-size:15px">Reviewable observations that organize the record. They do not replace, modify, or judge the captured evidence.</p>
-    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Forensic notes across investigations</span><span class="demo-tag">Demo data</span></h2>
+    <h2 class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Forensic notes across investigations</span><span class="demo-tag">Single-tenant production</span></h2>
     <div class="notes">${rows}</div>`;
 }
 
@@ -867,6 +916,31 @@ function viewSystem() {
 
     <div class="cards">
       <div class="card">
+        <h3>SaaS onboarding wizard</h3>
+        <p>Single-tenant production mirrors SaaS onboarding flow: connect approved tools in a few clicks, then get immediate pass/fail health status.</p>
+        <div class="onboard-pill">Few-click onboarding</div>
+        <ol class="onboard-steps">
+          <li>Choose connectors (Copilot, MCP servers, agents, GitHub, audit sources)</li>
+          <li>Run discovery in tenant scope</li>
+          <li>Review safe apply plan and approve</li>
+          <li>Apply onboarding changes idempotently</li>
+          <li>Validate credentials, reachability, heartbeat, sample capture</li>
+          <li>Get green/yellow/red health + one-click revalidate or rollback</li>
+        </ol>
+        <div class="onboard-actions">
+          <button class="onboard-btn" type="button" data-onboarding-action="run-all">Run Full Flow</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="session">Create Session</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="discover">Discover</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="plan">Plan</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="apply">Apply</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="validate">Validate</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="health">Health</button>
+          <button class="onboard-btn" type="button" data-onboarding-action="rollback">Rollback</button>
+        </div>
+        <div id="onboarding-status" class="onboard-status"></div>
+        <p class="subnote">Implementation base is <code>npm run blackbox:onboard</code>; production flow is dashboard-driven via <code>/api/v1/onboarding/*</code>.</p>
+      </div>
+      <div class="card">
         <h3>Integrations</h3>
         <p>Point one capture at your AI:</p>
         <ul>
@@ -881,6 +955,7 @@ function viewSystem() {
           <li><code>POST /api/blackbox/record</code> — ingest evidence</li>
           <li><code>GET /api/blackbox/query</code> — read records</li>
           <li><code>POST /api/blackbox/attribute</code> — root cause &amp; attribution</li>
+          <li><code>/api/v1/onboarding/*</code> — discover/plan/apply/validate/health/rollback</li>
         </ul>
       </div>
     </div>
@@ -919,6 +994,236 @@ function setActiveNav(view) {
   document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.view === view));
 }
 
+const ONBOARDING_FLOW = [
+  ["session", "Create session"],
+  ["discover", "Discover"],
+  ["plan", "Plan"],
+  ["apply", "Apply"],
+  ["validate", "Validate"],
+  ["health", "Health"],
+  ["rollback", "Rollback"]
+];
+
+const onboardingState = {
+  sessionId: "",
+  status: {
+    session: "idle",
+    discover: "idle",
+    plan: "idle",
+    apply: "idle",
+    validate: "idle",
+    health: "idle",
+    rollback: "idle"
+  },
+  details: {
+    discover: null,
+    plan: null,
+    apply: null,
+    validate: null,
+    health: null,
+    rollback: null
+  },
+  expandedDetails: {
+    discover: false,
+    plan: false,
+    apply: false,
+    validate: false,
+    health: false,
+    rollback: false
+  },
+  message: "Run full flow or execute steps manually."
+};
+
+function toggleDetailSection(key) {
+  onboardingState.expandedDetails[key] = !onboardingState.expandedDetails[key];
+  renderOnboardingStatus();
+}
+
+function setOnboardingDetail(key, title, lines) {
+  if (!Array.isArray(lines) || !lines.length) {
+    onboardingState.details[key] = null;
+    return;
+  }
+  onboardingState.details[key] = { title, lines };
+  // Auto-expand on successful step completion
+  if (onboardingState.status[key] === "ok") {
+    onboardingState.expandedDetails[key] = true;
+  }
+}
+
+function updateOnboardingStatus(step, state, message) {
+  onboardingState.status[step] = state;
+  if (message) onboardingState.message = message;
+  renderOnboardingStatus();
+}
+
+function renderOnboardingStatus() {
+  const el = document.getElementById("onboarding-status");
+  if (!el) return;
+  const rows = ONBOARDING_FLOW.map(([key, label]) => {
+    const st = onboardingState.status[key] || "idle";
+    const stateClass = st === "ok" ? "step-ok" : st === "running" ? "step-running" : st === "fail" ? "step-fail" : "step-idle";
+    const stateLabel = st === "ok" ? "OK" : st === "running" ? "RUNNING" : st === "fail" ? "FAILED" : "IDLE";
+    return `<div class="onboard-row"><span class="onboard-step">${esc(label)}</span><span class="onboard-step-state ${stateClass}">${stateLabel}</span></div>`;
+  }).join("");
+  const sid = onboardingState.sessionId
+    ? `<div class="onboard-id">session: ${esc(onboardingState.sessionId)}</div>`
+    : '<div class="onboard-id">session: not created</div>';
+  const msg = `<div class="onboard-msg">${esc(onboardingState.message)}</div>`;
+  const hasDetails = Object.values(onboardingState.details).some(Boolean);
+  const toggle = hasDetails
+    ? `<div class="onboard-toggle${Object.values(onboardingState.expandedDetails).every((v) => !v) ? ' collapsed' : ''}" data-onboarding-toggle="details">Details</div>`
+    : "";
+  const detailGroups = Object.entries(onboardingState.details)
+    .filter(([, group]) => group !== null)
+    .map(([key, group]) => {
+      const isExpanded = onboardingState.expandedDetails[key];
+      const lines = group.lines.map((line) => `<div class="onboard-detail-line">${line}</div>`).join("");
+      return `<div class="onboard-detail-group${!isExpanded ? ' hidden' : ''}" data-onboarding-detail="${key}"><div class="onboard-detail-title">${esc(group.title)}</div>${lines}</div>`;
+    })
+    .join("");
+  el.innerHTML = rows + sid + msg + toggle + detailGroups;
+}
+
+async function onboardingCall(path, method = "POST", body) {
+  const options = {
+    method,
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store"
+  };
+  if (body !== undefined) options.body = JSON.stringify(body);
+  const res = await fetch(path, options);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.ok) {
+    const message = json && typeof json.error === "string" ? json.error : `${method} ${path} failed (${res.status})`;
+    throw new Error(message);
+  }
+  return json;
+}
+
+async function runOnboardingStep(step) {
+  updateOnboardingStatus(step, "running", `Running ${step}...`);
+  try {
+    if (step === "session") {
+      const created = await onboardingCall("/api/v1/onboarding/sessions", "POST", {});
+      onboardingState.sessionId = created.session.id;
+      updateOnboardingStatus(step, "ok", "Session created.");
+      return;
+    }
+
+    if (!onboardingState.sessionId) {
+      const created = await onboardingCall("/api/v1/onboarding/sessions", "POST", {});
+      onboardingState.sessionId = created.session.id;
+      onboardingState.status.session = "ok";
+    }
+
+    const id = onboardingState.sessionId;
+    if (step === "discover") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/discover`);
+      const total = out.session?.discovery?.totals?.all ?? 0;
+      const totals = out.session?.discovery?.totals;
+      const servers = Array.isArray(out.session?.discovery?.servers) ? out.session.discovery.servers : [];
+      const lines = [];
+      if (totals) {
+        lines.push(`all=${totals.all}, stdio=${totals.stdio}, remote=${totals.remote}, wrappable=${totals.wrappable}`);
+      }
+      if (servers.length) {
+        lines.push(...servers.slice(0, 4).map((server) => `${esc(server.name)} (${esc(server.transport)})`));
+        if (servers.length > 4) lines.push(`+${servers.length - 4} more endpoint(s)`);
+      }
+      setOnboardingDetail("discover", "Discovery", lines);
+      updateOnboardingStatus(step, "ok", `Discovery complete: ${total} endpoint(s).`);
+      return;
+    }
+    if (step === "plan") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/plan`);
+      const sum = out.session?.plan?.summary;
+      const actions = Array.isArray(out.session?.plan?.actions) ? out.session.plan.actions : [];
+      const lines = [];
+      if (sum) {
+        lines.push(`in-place=${sum.inPlace}, proposal=${sum.proposal}, skip-remote=${sum.skipRemote}, already-wrapped=${sum.alreadyWrapped}`);
+      }
+      if (actions.length) {
+        lines.push(...actions.slice(0, 4).map((a) => `${esc(a.server)} -> ${esc(a.action)}`));
+        if (actions.length > 4) lines.push(`+${actions.length - 4} more action(s)`);
+      }
+      setOnboardingDetail("plan", "Plan", lines);
+      const msg = sum
+        ? `Plan: in-place=${sum.inPlace}, proposal=${sum.proposal}, skip-remote=${sum.skipRemote}.`
+        : "Plan created.";
+      updateOnboardingStatus(step, "ok", msg);
+      return;
+    }
+    if (step === "apply") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/apply`);
+      const editedFiles = out.session?.applyResult?.editedFiles || [];
+      const proposalFiles = out.session?.applyResult?.proposalFiles || [];
+      const backups = out.session?.applyResult?.backups || [];
+      const lines = [
+        `edited=${editedFiles.length}, proposals=${proposalFiles.length}, backups=${backups.length}`
+      ];
+      lines.push(...editedFiles.slice(0, 2).map((p) => `edited: ${esc(p)}`));
+      lines.push(...proposalFiles.slice(0, 2).map((p) => `proposal: ${esc(p)}`));
+      setOnboardingDetail("apply", "Apply", lines);
+      updateOnboardingStatus(step, "ok", `Apply complete: edited=${editedFiles.length}, proposals=${proposalFiles.length}.`);
+      refreshConnectionStatus();
+      return;
+    }
+    if (step === "validate") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/validate`);
+      const validation = out.session?.validation || {};
+      const checks = Array.isArray(validation.checks) ? validation.checks : [];
+      const pass = Boolean(validation.pass);
+      const lines = checks.length
+        ? checks.map((c) => `${c.ok ? '<span class="onboard-check-ok">PASS</span>' : '<span class="onboard-check-fail">FAIL</span>'} ${esc(c.check)} - ${esc(c.detail)}`)
+        : ["No validation checks returned."];
+      setOnboardingDetail("validate", "Validation checks", lines);
+      updateOnboardingStatus(step, pass ? "ok" : "fail", pass ? "Validation passed." : "Validation failed. Review check details below.");
+      return;
+    }
+    if (step === "health") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/health`, "GET");
+      const health = out.health || {};
+      const allConnected = Boolean(health.allConnected);
+      const never = Boolean(health.neverConnected);
+      const components = Array.isArray(health.components) ? health.components : [];
+      const lines = components.length
+        ? components.slice(0, 5).map((c) => `${esc(c.component)} (${esc(c.label || "n/a")}) - ${esc(c.state)}`)
+        : ["No component heartbeat entries yet."];
+      setOnboardingDetail("health", "Health components", lines);
+      const message = never
+        ? "No heartbeat yet."
+        : allConnected
+          ? "All connected."
+          : "Health degraded or broken. Check live connection status card.";
+      updateOnboardingStatus(step, allConnected ? "ok" : "fail", message);
+      refreshConnectionStatus();
+      return;
+    }
+    if (step === "rollback") {
+      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/rollback`);
+      const restoredFiles = out.session?.rollback?.restoredFiles || [];
+      const skippedBackups = out.session?.rollback?.skippedBackups || [];
+      const lines = [`restored=${restoredFiles.length}, skipped backups=${skippedBackups.length}`];
+      lines.push(...restoredFiles.slice(0, 3).map((p) => `restored: ${esc(p)}`));
+      setOnboardingDetail("rollback", "Rollback", lines);
+      updateOnboardingStatus(step, "ok", `Rollback complete: restored ${restoredFiles.length} file(s).`);
+      refreshConnectionStatus();
+      return;
+    }
+  } catch (error) {
+    updateOnboardingStatus(step, "fail", error instanceof Error ? error.message : `${step} failed.`);
+  }
+}
+
+async function runOnboardingFlow() {
+  const steps = ["session", "discover", "plan", "apply", "validate", "health"];
+  for (const step of steps) {
+    await runOnboardingStep(step);
+    if (onboardingState.status[step] === "fail") break;
+  }
+}
+
 function render(view, arg) {
   const main = document.getElementById("main");
   if (view === "detail") {
@@ -928,6 +1233,9 @@ function render(view, arg) {
     main.innerHTML = (VIEWS[view] || viewOverview)();
     setActiveNav(view);
   }
+  if (view === "system") {
+    renderOnboardingStatus();
+  }
   window.scrollTo({ top: 0, behavior: "auto" });
 }
 
@@ -936,10 +1244,34 @@ document.addEventListener("click", (e) => {
   const open = e.target.closest("[data-open]");
   const evref = e.target.closest("[data-ev]");
   const exportButton = e.target.closest("[data-export]");
+  const onboardingAction = e.target.closest("[data-onboarding-action]");
+  const onboardingToggle = e.target.closest("[data-onboarding-toggle]");
 
   if (exportButton && exportButton.dataset.export) {
     e.preventDefault();
     exportCaseRecord(exportButton.dataset.export);
+    return;
+  }
+
+  if (onboardingToggle && onboardingToggle.dataset.onboardingToggle) {
+    e.preventDefault();
+    // Toggle all details sections
+    const allExpanded = Object.values(onboardingState.expandedDetails).some((v) => v);
+    Object.keys(onboardingState.expandedDetails).forEach((key) => {
+      onboardingState.expandedDetails[key] = !allExpanded;
+    });
+    renderOnboardingStatus();
+    return;
+  }
+
+  if (onboardingAction && onboardingAction.dataset.onboardingAction) {
+    e.preventDefault();
+    const action = onboardingAction.dataset.onboardingAction;
+    if (action === "run-all") {
+      runOnboardingFlow();
+    } else {
+      runOnboardingStep(action);
+    }
     return;
   }
 
@@ -1008,7 +1340,7 @@ function renderConnectionBanner(health, reachable) {
 
   if (!reachable) {
     banner.className = "conn-banner conn-none";
-    banner.innerHTML = '<div class="title"><span class="dot"></span>No live environment connected</div><div class="detail">This is the demo dashboard, or no capture point has reported a heartbeat yet. Run onboarding, then this turns green once the gateway/MCP/agents connect.</div>';
+    banner.innerHTML = '<div class="title"><span class="dot"></span>No live environment connected</div><div class="detail">No capture point has reported a heartbeat yet in this single-tenant production environment. Run onboarding, then this turns green once gateway/MCP/agents connect.</div>';
     return;
   }
 
