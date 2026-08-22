@@ -940,7 +940,13 @@ function viewSystem() {
               <span class="onboard-step-number">1</span>
               <span class="onboard-step-title">Choose your setup</span>
             </div>
-            <div class="onboard-step-subtitle">Pick the installation package that works for you.</div>
+            <div class="onboard-step-subtitle">First choose a package. You will then request and download the private package before installing anything.</div>
+
+            <div style="padding: 14px; background: #58b0ff0c; border: 1px solid #58b0ff30; border-radius: 8px; margin: 14px 0 16px;">
+              <div style="font-size: 13px; color: var(--trust); font-weight: 700; margin-bottom: 6px;">Before you begin</div>
+              <div style="font-size: 12px; color: var(--ink-2); line-height: 1.6;">You will need Node.js 20 or newer. The starter package is delivered privately because it contains the local capture agent. It is not a public download.</div>
+              <div style="margin-top: 10px;"><a href="https://nodejs.org/" target="_blank" rel="noopener" style="color: var(--trust); font-size: 12px;">Get Node.js from nodejs.org ↗</a></div>
+            </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
               <div style="border: 2px solid var(--line-soft); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color .15s; background: #ffffff04;" data-package="quick">
@@ -1141,37 +1147,42 @@ const onboardingWizard = {
     const quickContent = `
       <div style="padding: 14px; background: #58b0ff0c; border: 1px solid #58b0ff30; border-radius: 8px; margin-bottom: 16px;">
         <div style="font-size: 13px; color: var(--trust); font-weight: 700; margin-bottom: 6px;">Starter package</div>
-        <div style="font-size: 12px; color: var(--ink-2); line-height: 1.6;">A private, versioned package containing the local capture service, health check, and optional MCP connection helper. It does not contain your application code, customer data, or credentials.</div>
+        <div style="font-size: 12px; color: var(--ink-2); line-height: 1.6;">This private package contains the local capture service and health check. It does not contain your application code, customer data, or credentials.</div>
       </div>
-      <ul class="onboard-simple-list">
-        <li><strong>Receive the package privately</strong> for your approved environment</li>
-        <li><strong>Extract it anywhere</strong> and open Terminal in that folder</li>
-        <li><strong>Install once:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code></li>
-        <li><strong>Start capture:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
-      </ul>
-      <div style="margin-top: 16px;"><a class="onboard-btn-simple onboard-btn-primary" href="mailto:admin@shimiscyberworld.com?subject=AIBlackBox%20starter%20package%20request">Request Starter Package</a></div>
+      <div style="margin-bottom: 14px;"><a class="onboard-btn-simple onboard-btn-primary" href="mailto:admin@shimiscyberworld.com?subject=AIBlackBox%20starter%20package%20request">1. Request the package</a></div>
+      <ol style="padding-left: 22px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.8;">
+        <li>Download the ZIP from the private link you receive.</li>
+        <li>Double-click the ZIP to extract it. Choose any location, such as Downloads.</li>
+        <li>Open the extracted <strong>claimtrace-aiblackbox-starter</strong> folder in Finder.</li>
+        <li>Right-click the folder and choose <strong>Services → New Terminal at Folder</strong>. If that option is unavailable, open Terminal, type <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">cd </code> with a space, then drag the folder into Terminal and press Enter.</li>
+        <li>Confirm you are in the right folder: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">test -f package.json &amp;&amp; echo "Ready"</code>. You must see <strong>Ready</strong>.</li>
+        <li>Install once: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code></li>
+        <li>Start capture: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">BLACKBOX_UPSTREAM=https://api.openai.com npm run blackbox:gateway</code></li>
+      </ol>
       <div style="padding: 12px; background: #e0a53a12; border: 1px solid #e0a53a30; border-radius: 8px; margin-top: 16px;">
-        <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">⚠ Keep this terminal open</div>
-        <div style="font-size: 12px; color: var(--ink-2);">The package creates its own local evidence folder. Leave this window open to keep capturing. Your application repository is not required.</div>
+        <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">Keep this Terminal window open</div>
+        <div style="font-size: 12px; color: var(--ink-2);">The package creates its own local evidence folder. Your application repository is not required.</div>
       </div>
     `;
 
     const fullContent = `
-      <div style="margin-bottom: 20px;">
-        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">1. Start the gateway</div>
-        <div class="onboard-code-block">npm install<br>BLACKBOX_UPSTREAM=https://api.openai.com npm run blackbox:gateway</div>
-        <div style="font-size: 12px; color: var(--muted);">Run these commands from the folder where you extracted the package.</div>
+      <div style="padding: 14px; background: #58b0ff0c; border: 1px solid #58b0ff30; border-radius: 8px; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: var(--trust); font-weight: 700; margin-bottom: 6px;">Full setup package</div>
+        <div style="font-size: 12px; color: var(--ink-2); line-height: 1.6;">This private package includes local capture, health checks, and the optional MCP connection helper. It does not contain your application code, customer data, or credentials.</div>
       </div>
-
-      <div style="margin-bottom: 20px;">
-        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">2. Connect your MCP servers</div>
-        <div class="onboard-code-block">npm run blackbox:onboard</div>
-        <div style="font-size: 12px; color: var(--muted);">Use this only if you also use local MCP servers. It will show you what it found before changing anything.</div>
-      </div>
-
-      <div>
-        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">3. Start working</div>
-        <div style="font-size: 12px; color: var(--ink-2);">Use your AI tools normally. We'll capture everything in the background.</div>
+      <div style="margin-bottom: 14px;"><a class="onboard-btn-simple onboard-btn-primary" href="mailto:admin@shimiscyberworld.com?subject=AIBlackBox%20full%20setup%20package%20request">1. Request the package</a></div>
+      <ol style="padding-left: 22px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.8;">
+        <li>Download the ZIP from the private link you receive and double-click it to extract it.</li>
+        <li>Open the extracted <strong>claimtrace-aiblackbox-starter</strong> folder in Finder.</li>
+        <li>Right-click the folder and choose <strong>Services → New Terminal at Folder</strong>. Otherwise type <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">cd </code>, drag the folder into Terminal, and press Enter.</li>
+        <li>Confirm the location before running npm: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">test -f package.json &amp;&amp; echo "Ready"</code>. Continue only when you see <strong>Ready</strong>.</li>
+        <li>Check Node.js: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">node --version</code>. It must be 20 or newer.</li>
+        <li>Install and start capture: <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code>, then <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">BLACKBOX_UPSTREAM=https://api.openai.com npm run blackbox:gateway</code></li>
+        <li>For local MCP servers only, open a second Terminal in the same folder and run <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:onboard</code>. Review its suggestions before accepting changes.</li>
+      </ol>
+      <div style="padding: 12px; background: #e0a53a12; border: 1px solid #e0a53a30; border-radius: 8px; margin-top: 16px;">
+        <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">Keep the gateway Terminal window open</div>
+        <div style="font-size: 12px; color: var(--ink-2);">Use your AI tools normally while the gateway is running. Evidence stays in the package folder.</div>
       </div>
     `;
 
