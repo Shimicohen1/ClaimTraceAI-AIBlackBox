@@ -931,8 +931,8 @@ function viewSystem() {
     <div class="cards">
       <div class="card">
         <h3>Getting Started</h3>
-        <p>Set up AI forensics capture in just a few minutes. Choose a package below to get started.</p>
-        
+        <p>Download a small package, install it, and start capturing AI activity locally. You do not need this repository.</p>
+
         <div class="onboard-wizard" id="onboarding-wizard">
           <!-- Step 1: Choose Package -->
           <div class="onboard-wizard-step active" data-step="1">
@@ -941,7 +941,7 @@ function viewSystem() {
               <span class="onboard-step-title">Choose your setup</span>
             </div>
             <div class="onboard-step-subtitle">Pick the installation package that works for you.</div>
-            
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
               <div style="border: 2px solid var(--line-soft); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color .15s; background: #ffffff04;" data-package="quick">
                 <div style="font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Quick Start</div>
@@ -963,7 +963,7 @@ function viewSystem() {
                 </ul>
               </div>
             </div>
-            
+
             <div class="onboard-controls">
               <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="select-package" data-package-value="quick">Quick Start</button>
               <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="select-package" data-package-value="full">Full Setup</button>
@@ -978,15 +978,15 @@ function viewSystem() {
               <div class="onboard-progress-dot"></div>
               <div class="onboard-progress-dot"></div>
             </div>
-            
+
             <div class="onboard-step-header">
               <span class="onboard-step-number">2</span>
               <span class="onboard-step-title" id="step2-title">Installation</span>
             </div>
             <div class="onboard-step-subtitle" id="step2-subtitle">Follow these steps to get started.</div>
-            
+
             <div class="onboard-step-content" id="step2-content"></div>
-            
+
             <div class="onboard-controls">
               <button class="onboard-btn-simple onboard-btn-secondary" data-wizard-action="back">Back</button>
               <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="next">Next →</button>
@@ -1001,21 +1001,21 @@ function viewSystem() {
               <div class="onboard-progress-dot active"></div>
               <div class="onboard-progress-dot"></div>
             </div>
-            
+
             <div class="onboard-step-header">
               <span class="onboard-step-number">3</span>
               <span class="onboard-step-title">Verify it's working</span>
             </div>
             <div class="onboard-step-subtitle">Run this command to check everything is connected.</div>
-            
+
             <div class="onboard-code-block">npm run blackbox:health</div>
             <p style="color: var(--muted); font-size: 12px; margin: 12px 0;">You should see <span class="onboard-success">✓ Connected</span> for each component.</p>
-            
+
             <div style="padding: 12px; background: #3fd0b012; border: 1px solid #3fd0b030; border-radius: 8px; margin: 16px 0;">
               <div style="font-size: 13px; color: var(--teal); font-weight: 650; margin-bottom: 6px;">Status: <span id="health-status">Checking…</span></div>
               <div id="health-details" style="font-size: 12px; color: var(--ink-2); line-height: 1.5;"></div>
             </div>
-            
+
             <div class="onboard-controls">
               <button class="onboard-btn-simple onboard-btn-secondary" data-wizard-action="back">Back</button>
               <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="next">Next →</button>
@@ -1030,7 +1030,7 @@ function viewSystem() {
               <div class="onboard-progress-dot complete"></div>
               <div class="onboard-progress-dot complete"></div>
             </div>
-            
+
             <div style="text-align: center; padding: 40px 20px;">
               <div style="font-size: 48px; margin-bottom: 12px;">✓</div>
               <div class="onboard-step-title" style="font-size: 24px; margin-bottom: 8px;">You're all set!</div>
@@ -1039,7 +1039,7 @@ function viewSystem() {
               </div>
               <p style="color: var(--ink-2); font-size: 13px; margin: 16px 0;">Go to <strong>Investigations</strong> to see your first cases.</p>
             </div>
-            
+
             <div class="onboard-controls" style="justify-content: center;">
               <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="finish">View Investigations</button>
             </div>
@@ -1113,90 +1113,93 @@ const ONBOARDING_FLOW = [
 const onboardingWizard = {
   currentStep: 1,
   selectedPackage: null,
-  
+
   goToStep(step) {
     this.currentStep = step;
     document.querySelectorAll(".onboard-wizard-step").forEach((el) => {
       el.classList.toggle("active", parseInt(el.dataset.step) === step);
     });
   },
-  
+
   selectPackage(pkg) {
     this.selectedPackage = pkg;
     this.renderStep2();
     this.goToStep(2);
   },
-  
+
   renderStep2() {
     const isQuick = this.selectedPackage === "quick";
     const step2Title = document.getElementById("step2-title");
     const step2Subtitle = document.getElementById("step2-subtitle");
     const step2Content = document.getElementById("step2-content");
-    
+
     step2Title.textContent = isQuick ? "Quick Start Setup" : "Full Setup";
     step2Subtitle.textContent = isQuick
       ? "Start capturing in minutes."
       : "Connect all your AI tools and systems.";
-    
+
     const quickContent = `
+      <div style="margin-bottom: 16px;">
+        <a class="onboard-btn-simple onboard-btn-primary" href="https://github.com/Shimicohen1/ClaimTraceAI-AIBlackBox/releases/download/starter-v0.1.0/claimtrace-aiblackbox-starter-v0.1.0.zip" target="_blank" rel="noopener">Download Starter Package</a>
+      </div>
       <ul class="onboard-simple-list">
-        <li><strong>Open Terminal:</strong> Press Cmd+Space, type "Terminal"</li>
-        <li><strong>Navigate to the project:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">cd claimtrace-code-forensics</code></li>
-        <li><strong>Start capturing:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
+        <li><strong>Download and extract</strong> the package anywhere on your computer</li>
+        <li><strong>Open Terminal in the extracted folder</strong></li>
+        <li><strong>Install and start:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code>, then <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
       </ul>
       <div style="padding: 12px; background: #e0a53a12; border: 1px solid #e0a53a30; border-radius: 8px; margin-top: 16px;">
         <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">⚠ Keep this terminal open</div>
-        <div style="font-size: 12px; color: var(--ink-2);">The gateway will run in the background. Leave this window open to keep capturing evidence.</div>
+        <div style="font-size: 12px; color: var(--ink-2);">The package creates its own local evidence folder. Leave this window open to keep capturing.</div>
       </div>
     `;
-    
+
     const fullContent = `
       <div style="margin-bottom: 20px;">
         <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">1. Start the gateway</div>
-        <div class="onboard-code-block">npm run blackbox:gateway</div>
-        <div style="font-size: 12px; color: var(--muted);">This captures traffic from Copilot and your AI tools.</div>
+        <div class="onboard-code-block">npm install<br>BLACKBOX_UPSTREAM=https://api.openai.com npm run blackbox:gateway</div>
+        <div style="font-size: 12px; color: var(--muted);">Run these commands from the folder where you extracted the package.</div>
       </div>
-      
+
       <div style="margin-bottom: 20px;">
         <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">2. Connect your MCP servers</div>
         <div class="onboard-code-block">npm run blackbox:onboard</div>
-        <div style="font-size: 12px; color: var(--muted);">Automatically finds and wraps your MCP servers for capture.</div>
+        <div style="font-size: 12px; color: var(--muted);">Use this only if you also use local MCP servers. It will show you what it found before changing anything.</div>
       </div>
-      
+
       <div>
         <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">3. Start working</div>
         <div style="font-size: 12px; color: var(--ink-2);">Use your AI tools normally. We'll capture everything in the background.</div>
       </div>
     `;
-    
+
     step2Content.innerHTML = isQuick ? quickContent : fullContent;
   },
-  
+
   checkHealth() {
     const statusEl = document.getElementById("health-status");
     const detailsEl = document.getElementById("health-details");
-    
+
     statusEl.textContent = "Checking…";
     detailsEl.textContent = "";
-    
+
     fetch("/api/blackbox/health", { cache: "no-store" })
       .then((res) => res.json())
       .catch(() => ({}))
       .then((data) => {
         const health = data || {};
         const components = health.components || [];
-        
+
         if (components.length === 0) {
           statusEl.className = "onboard-warning";
           statusEl.textContent = "⚠ Not yet connected";
           detailsEl.innerHTML = "Make sure the gateway is running and you've connected your tools.";
           return;
         }
-        
+
         const allConnected = components.every((c) => c.state === "connected");
         statusEl.className = allConnected ? "onboard-success" : "onboard-warning";
         statusEl.textContent = allConnected ? "✓ All connected" : "⚠ Partial connection";
-        
+
         const lines = components.slice(0, 5).map((c) => {
           const stateIcon = c.state === "connected" ? "✓" : "○";
           return `<div>${stateIcon} ${esc(c.component)}: <strong>${esc(c.state)}</strong></div>`;
@@ -1213,13 +1216,13 @@ document.addEventListener("click", (e) => {
   const nextBtn = e.target.closest("[data-wizard-action='next']");
   const finishBtn = e.target.closest("[data-wizard-action='finish']");
   const pkgCard = e.target.closest("[data-package]");
-  
+
   if (selectPkgBtn) {
     e.preventDefault();
     onboardingWizard.selectPackage(selectPkgBtn.dataset.packageValue);
     return;
   }
-  
+
   if (pkgCard && !e.target.closest("button")) {
     e.preventDefault();
     const pkgValue = pkgCard.dataset.package;
@@ -1230,7 +1233,7 @@ document.addEventListener("click", (e) => {
     });
     return;
   }
-  
+
   if (backBtn) {
     e.preventDefault();
     if (onboardingWizard.currentStep > 1) {
@@ -1238,7 +1241,7 @@ document.addEventListener("click", (e) => {
     }
     return;
   }
-  
+
   if (nextBtn) {
     e.preventDefault();
     if (onboardingWizard.currentStep === 2) {
@@ -1249,7 +1252,7 @@ document.addEventListener("click", (e) => {
     }
     return;
   }
-  
+
   if (finishBtn) {
     e.preventDefault();
     render("investigations");
