@@ -321,17 +321,31 @@
   .step-ok { color: var(--teal); }
   .step-fail { color: var(--danger); }
   .onboard-msg { margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.45; }
-  .onboard-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--muted); cursor: pointer; margin-top: 8px; padding: 4px 6px; border-radius: 6px; transition: background .15s, color .15s; }
-  .onboard-toggle:hover { color: var(--ink-2); background: #ffffff08; }
-  .onboard-toggle::before { content: '▼'; display: inline-block; transition: transform .2s; font-size: 9px; }
-  .onboard-toggle.collapsed::before { transform: rotate(-90deg); }
-  .onboard-detail-group { margin-top: 8px; border-top: 1px solid var(--line-soft); padding-top: 8px; max-height: 1000px; overflow: hidden; transition: max-height .3s ease-out, opacity .2s ease-out; opacity: 1; }
-  .onboard-detail-group.hidden { max-height: 0; opacity: 0; padding-top: 0; border-top: none; }
-  .onboard-detail-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
-  .onboard-detail-line { font-size: 12px; color: var(--ink-2); line-height: 1.45; }
-  .onboard-detail-line + .onboard-detail-line { margin-top: 3px; }
-  .onboard-check-ok { color: var(--teal); }
-  .onboard-check-fail { color: var(--danger); }
+  .onboard-wizard { display: flex; flex-direction: column; gap: 20px; }
+  .onboard-wizard-step { display: none; padding: 20px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--panel); }
+  .onboard-wizard-step.active { display: block; }
+  .onboard-step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .onboard-step-number { font-size: 28px; font-weight: 700; color: var(--trust); }
+  .onboard-step-title { font-size: 18px; font-weight: 700; color: var(--ink); margin-left: 12px; }
+  .onboard-step-subtitle { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; line-height: 1.5; }
+  .onboard-step-content { margin-bottom: 20px; }
+  .onboard-simple-list { list-style: none; padding: 0; margin: 0; }
+  .onboard-simple-list li { padding: 10px 0; color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+  .onboard-simple-list li::before { content: '→ '; color: var(--trust); font-weight: 700; margin-right: 8px; }
+  .onboard-code-block { background: #0a0f17; border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin: 10px 0; overflow-x: auto; }
+  .onboard-progress-bar { display: flex; gap: 4px; margin-bottom: 12px; }
+  .onboard-progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .onboard-progress-dot.active { background: var(--trust); }
+  .onboard-progress-dot.complete { background: var(--teal); }
+  .onboard-controls { display: flex; gap: 12px; margin-top: 20px; }
+  .onboard-btn-simple { border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 650; cursor: pointer; transition: background .15s, color .15s; }
+  .onboard-btn-primary { background: var(--trust); color: #0a0e14; }
+  .onboard-btn-primary:hover { background: #58b0ffcc; }
+  .onboard-btn-secondary { background: #ffffff08; color: var(--ink-2); border: 1px solid var(--line); }
+  .onboard-btn-secondary:hover { background: #ffffff12; }
+  .onboard-success { color: var(--teal); font-weight: 700; }
+  .onboard-error { color: var(--danger); font-weight: 700; }
+  .onboard-warning { color: var(--amber); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -916,29 +930,121 @@ function viewSystem() {
 
     <div class="cards">
       <div class="card">
-        <h3>SaaS onboarding wizard</h3>
-        <p>Single-tenant production mirrors SaaS onboarding flow: connect approved tools in a few clicks, then get immediate pass/fail health status.</p>
-        <div class="onboard-pill">Few-click onboarding</div>
-        <ol class="onboard-steps">
-          <li>Choose connectors (Copilot, MCP servers, agents, GitHub, audit sources)</li>
-          <li>Run discovery in tenant scope</li>
-          <li>Review safe apply plan and approve</li>
-          <li>Apply onboarding changes idempotently</li>
-          <li>Validate credentials, reachability, heartbeat, sample capture</li>
-          <li>Get green/yellow/red health + one-click revalidate or rollback</li>
-        </ol>
-        <div class="onboard-actions">
-          <button class="onboard-btn" type="button" data-onboarding-action="run-all">Run Full Flow</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="session">Create Session</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="discover">Discover</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="plan">Plan</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="apply">Apply</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="validate">Validate</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="health">Health</button>
-          <button class="onboard-btn" type="button" data-onboarding-action="rollback">Rollback</button>
+        <h3>Getting Started</h3>
+        <p>Set up AI forensics capture in just a few minutes. Choose a package below to get started.</p>
+        
+        <div class="onboard-wizard" id="onboarding-wizard">
+          <!-- Step 1: Choose Package -->
+          <div class="onboard-wizard-step active" data-step="1">
+            <div class="onboard-step-header">
+              <span class="onboard-step-number">1</span>
+              <span class="onboard-step-title">Choose your setup</span>
+            </div>
+            <div class="onboard-step-subtitle">Pick the installation package that works for you.</div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
+              <div style="border: 2px solid var(--line-soft); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color .15s; background: #ffffff04;" data-package="quick">
+                <div style="font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Quick Start</div>
+                <div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">15 minutes</div>
+                <ul class="onboard-simple-list" style="margin: 0;">
+                  <li style="padding: 4px 0;">Start capturing AI activity</li>
+                  <li style="padding: 4px 0;">Local storage only</li>
+                  <li style="padding: 4px 0;">See your first case</li>
+                </ul>
+              </div>
+
+              <div style="border: 2px solid var(--line-soft); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color .15s; background: #ffffff04;" data-package="full">
+                <div style="font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Full Setup</div>
+                <div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">45 minutes</div>
+                <ul class="onboard-simple-list" style="margin: 0;">
+                  <li style="padding: 4px 0;">Connect all your tools</li>
+                  <li style="padding: 4px 0;">Continuous monitoring</li>
+                  <li style="padding: 4px 0;">Full access controls</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="onboard-controls">
+              <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="select-package" data-package-value="quick">Quick Start</button>
+              <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="select-package" data-package-value="full">Full Setup</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Setup Instructions -->
+          <div class="onboard-wizard-step" data-step="2">
+            <div class="onboard-progress-bar">
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot active"></div>
+              <div class="onboard-progress-dot"></div>
+              <div class="onboard-progress-dot"></div>
+            </div>
+            
+            <div class="onboard-step-header">
+              <span class="onboard-step-number">2</span>
+              <span class="onboard-step-title" id="step2-title">Installation</span>
+            </div>
+            <div class="onboard-step-subtitle" id="step2-subtitle">Follow these steps to get started.</div>
+            
+            <div class="onboard-step-content" id="step2-content"></div>
+            
+            <div class="onboard-controls">
+              <button class="onboard-btn-simple onboard-btn-secondary" data-wizard-action="back">Back</button>
+              <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="next">Next →</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Verification -->
+          <div class="onboard-wizard-step" data-step="3">
+            <div class="onboard-progress-bar">
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot active"></div>
+              <div class="onboard-progress-dot"></div>
+            </div>
+            
+            <div class="onboard-step-header">
+              <span class="onboard-step-number">3</span>
+              <span class="onboard-step-title">Verify it's working</span>
+            </div>
+            <div class="onboard-step-subtitle">Run this command to check everything is connected.</div>
+            
+            <div class="onboard-code-block">npm run blackbox:health</div>
+            <p style="color: var(--muted); font-size: 12px; margin: 12px 0;">You should see <span class="onboard-success">✓ Connected</span> for each component.</p>
+            
+            <div style="padding: 12px; background: #3fd0b012; border: 1px solid #3fd0b030; border-radius: 8px; margin: 16px 0;">
+              <div style="font-size: 13px; color: var(--teal); font-weight: 650; margin-bottom: 6px;">Status: <span id="health-status">Checking…</span></div>
+              <div id="health-details" style="font-size: 12px; color: var(--ink-2); line-height: 1.5;"></div>
+            </div>
+            
+            <div class="onboard-controls">
+              <button class="onboard-btn-simple onboard-btn-secondary" data-wizard-action="back">Back</button>
+              <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="next">Next →</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Done -->
+          <div class="onboard-wizard-step" data-step="4">
+            <div class="onboard-progress-bar">
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot complete"></div>
+              <div class="onboard-progress-dot complete"></div>
+            </div>
+            
+            <div style="text-align: center; padding: 40px 20px;">
+              <div style="font-size: 48px; margin-bottom: 12px;">✓</div>
+              <div class="onboard-step-title" style="font-size: 24px; margin-bottom: 8px;">You're all set!</div>
+              <div style="color: var(--muted); font-size: 14px; max-width: 500px; margin: 0 auto 24px; line-height: 1.6;">
+                AI forensics is now running. Every time AI is involved in your work, we're capturing the evidence you need to investigate what happened.
+              </div>
+              <p style="color: var(--ink-2); font-size: 13px; margin: 16px 0;">Go to <strong>Investigations</strong> to see your first cases.</p>
+            </div>
+            
+            <div class="onboard-controls" style="justify-content: center;">
+              <button class="onboard-btn-simple onboard-btn-primary" data-wizard-action="finish">View Investigations</button>
+            </div>
+          </div>
         </div>
-        <div id="onboarding-status" class="onboard-status"></div>
-        <p class="subnote">Implementation base is <code>npm run blackbox:onboard</code>; production flow is dashboard-driven via <code>/api/v1/onboarding/*</code>.</p>
       </div>
       <div class="card">
         <h3>Integrations</h3>
@@ -1004,225 +1110,152 @@ const ONBOARDING_FLOW = [
   ["rollback", "Rollback"]
 ];
 
-const onboardingState = {
-  sessionId: "",
-  status: {
-    session: "idle",
-    discover: "idle",
-    plan: "idle",
-    apply: "idle",
-    validate: "idle",
-    health: "idle",
-    rollback: "idle"
+const onboardingWizard = {
+  currentStep: 1,
+  selectedPackage: null,
+  
+  goToStep(step) {
+    this.currentStep = step;
+    document.querySelectorAll(".onboard-wizard-step").forEach((el) => {
+      el.classList.toggle("active", parseInt(el.dataset.step) === step);
+    });
   },
-  details: {
-    discover: null,
-    plan: null,
-    apply: null,
-    validate: null,
-    health: null,
-    rollback: null
+  
+  selectPackage(pkg) {
+    this.selectedPackage = pkg;
+    this.renderStep2();
+    this.goToStep(2);
   },
-  expandedDetails: {
-    discover: false,
-    plan: false,
-    apply: false,
-    validate: false,
-    health: false,
-    rollback: false
+  
+  renderStep2() {
+    const isQuick = this.selectedPackage === "quick";
+    const step2Title = document.getElementById("step2-title");
+    const step2Subtitle = document.getElementById("step2-subtitle");
+    const step2Content = document.getElementById("step2-content");
+    
+    step2Title.textContent = isQuick ? "Quick Start Setup" : "Full Setup";
+    step2Subtitle.textContent = isQuick
+      ? "Start capturing in minutes."
+      : "Connect all your AI tools and systems.";
+    
+    const quickContent = `
+      <ul class="onboard-simple-list">
+        <li><strong>Open Terminal:</strong> Press Cmd+Space, type "Terminal"</li>
+        <li><strong>Navigate to the project:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">cd claimtrace-code-forensics</code></li>
+        <li><strong>Start capturing:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
+      </ul>
+      <div style="padding: 12px; background: #e0a53a12; border: 1px solid #e0a53a30; border-radius: 8px; margin-top: 16px;">
+        <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">⚠ Keep this terminal open</div>
+        <div style="font-size: 12px; color: var(--ink-2);">The gateway will run in the background. Leave this window open to keep capturing evidence.</div>
+      </div>
+    `;
+    
+    const fullContent = `
+      <div style="margin-bottom: 20px;">
+        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">1. Start the gateway</div>
+        <div class="onboard-code-block">npm run blackbox:gateway</div>
+        <div style="font-size: 12px; color: var(--muted);">This captures traffic from Copilot and your AI tools.</div>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">2. Connect your MCP servers</div>
+        <div class="onboard-code-block">npm run blackbox:onboard</div>
+        <div style="font-size: 12px; color: var(--muted);">Automatically finds and wraps your MCP servers for capture.</div>
+      </div>
+      
+      <div>
+        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">3. Start working</div>
+        <div style="font-size: 12px; color: var(--ink-2);">Use your AI tools normally. We'll capture everything in the background.</div>
+      </div>
+    `;
+    
+    step2Content.innerHTML = isQuick ? quickContent : fullContent;
   },
-  message: "Run full flow or execute steps manually."
+  
+  checkHealth() {
+    const statusEl = document.getElementById("health-status");
+    const detailsEl = document.getElementById("health-details");
+    
+    statusEl.textContent = "Checking…";
+    detailsEl.textContent = "";
+    
+    fetch("/api/blackbox/health", { cache: "no-store" })
+      .then((res) => res.json())
+      .catch(() => ({}))
+      .then((data) => {
+        const health = data || {};
+        const components = health.components || [];
+        
+        if (components.length === 0) {
+          statusEl.className = "onboard-warning";
+          statusEl.textContent = "⚠ Not yet connected";
+          detailsEl.innerHTML = "Make sure the gateway is running and you've connected your tools.";
+          return;
+        }
+        
+        const allConnected = components.every((c) => c.state === "connected");
+        statusEl.className = allConnected ? "onboard-success" : "onboard-warning";
+        statusEl.textContent = allConnected ? "✓ All connected" : "⚠ Partial connection";
+        
+        const lines = components.slice(0, 5).map((c) => {
+          const stateIcon = c.state === "connected" ? "✓" : "○";
+          return `<div>${stateIcon} ${esc(c.component)}: <strong>${esc(c.state)}</strong></div>`;
+        });
+        detailsEl.innerHTML = lines.join("");
+      });
+  }
 };
 
-function toggleDetailSection(key) {
-  onboardingState.expandedDetails[key] = !onboardingState.expandedDetails[key];
-  renderOnboardingStatus();
-}
-
-function setOnboardingDetail(key, title, lines) {
-  if (!Array.isArray(lines) || !lines.length) {
-    onboardingState.details[key] = null;
+// Wizard event handling
+document.addEventListener("click", (e) => {
+  const selectPkgBtn = e.target.closest("[data-wizard-action='select-package']");
+  const backBtn = e.target.closest("[data-wizard-action='back']");
+  const nextBtn = e.target.closest("[data-wizard-action='next']");
+  const finishBtn = e.target.closest("[data-wizard-action='finish']");
+  const pkgCard = e.target.closest("[data-package]");
+  
+  if (selectPkgBtn) {
+    e.preventDefault();
+    onboardingWizard.selectPackage(selectPkgBtn.dataset.packageValue);
     return;
   }
-  onboardingState.details[key] = { title, lines };
-  // Auto-expand on successful step completion
-  if (onboardingState.status[key] === "ok") {
-    onboardingState.expandedDetails[key] = true;
+  
+  if (pkgCard && !e.target.closest("button")) {
+    e.preventDefault();
+    const pkgValue = pkgCard.dataset.package;
+    onboardingWizard.selectPackage(pkgValue);
+    pkgCard.parentElement.querySelectorAll("[data-package]").forEach((c) => {
+      c.style.borderColor = c === pkgCard ? "var(--trust)" : "var(--line-soft)";
+      c.style.background = c === pkgCard ? "#58b0ff0c" : "#ffffff04";
+    });
+    return;
   }
-}
-
-function updateOnboardingStatus(step, state, message) {
-  onboardingState.status[step] = state;
-  if (message) onboardingState.message = message;
-  renderOnboardingStatus();
-}
-
-function renderOnboardingStatus() {
-  const el = document.getElementById("onboarding-status");
-  if (!el) return;
-  const rows = ONBOARDING_FLOW.map(([key, label]) => {
-    const st = onboardingState.status[key] || "idle";
-    const stateClass = st === "ok" ? "step-ok" : st === "running" ? "step-running" : st === "fail" ? "step-fail" : "step-idle";
-    const stateLabel = st === "ok" ? "OK" : st === "running" ? "RUNNING" : st === "fail" ? "FAILED" : "IDLE";
-    return `<div class="onboard-row"><span class="onboard-step">${esc(label)}</span><span class="onboard-step-state ${stateClass}">${stateLabel}</span></div>`;
-  }).join("");
-  const sid = onboardingState.sessionId
-    ? `<div class="onboard-id">session: ${esc(onboardingState.sessionId)}</div>`
-    : '<div class="onboard-id">session: not created</div>';
-  const msg = `<div class="onboard-msg">${esc(onboardingState.message)}</div>`;
-  const hasDetails = Object.values(onboardingState.details).some(Boolean);
-  const toggle = hasDetails
-    ? `<div class="onboard-toggle${Object.values(onboardingState.expandedDetails).every((v) => !v) ? ' collapsed' : ''}" data-onboarding-toggle="details">Details</div>`
-    : "";
-  const detailGroups = Object.entries(onboardingState.details)
-    .filter(([, group]) => group !== null)
-    .map(([key, group]) => {
-      const isExpanded = onboardingState.expandedDetails[key];
-      const lines = group.lines.map((line) => `<div class="onboard-detail-line">${line}</div>`).join("");
-      return `<div class="onboard-detail-group${!isExpanded ? ' hidden' : ''}" data-onboarding-detail="${key}"><div class="onboard-detail-title">${esc(group.title)}</div>${lines}</div>`;
-    })
-    .join("");
-  el.innerHTML = rows + sid + msg + toggle + detailGroups;
-}
-
-async function onboardingCall(path, method = "POST", body) {
-  const options = {
-    method,
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store"
-  };
-  if (body !== undefined) options.body = JSON.stringify(body);
-  const res = await fetch(path, options);
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok || !json.ok) {
-    const message = json && typeof json.error === "string" ? json.error : `${method} ${path} failed (${res.status})`;
-    throw new Error(message);
+  
+  if (backBtn) {
+    e.preventDefault();
+    if (onboardingWizard.currentStep > 1) {
+      onboardingWizard.goToStep(onboardingWizard.currentStep - 1);
+    }
+    return;
   }
-  return json;
-}
-
-async function runOnboardingStep(step) {
-  updateOnboardingStatus(step, "running", `Running ${step}...`);
-  try {
-    if (step === "session") {
-      const created = await onboardingCall("/api/v1/onboarding/sessions", "POST", {});
-      onboardingState.sessionId = created.session.id;
-      updateOnboardingStatus(step, "ok", "Session created.");
-      return;
+  
+  if (nextBtn) {
+    e.preventDefault();
+    if (onboardingWizard.currentStep === 2) {
+      onboardingWizard.checkHealth();
     }
-
-    if (!onboardingState.sessionId) {
-      const created = await onboardingCall("/api/v1/onboarding/sessions", "POST", {});
-      onboardingState.sessionId = created.session.id;
-      onboardingState.status.session = "ok";
+    if (onboardingWizard.currentStep < 4) {
+      onboardingWizard.goToStep(onboardingWizard.currentStep + 1);
     }
-
-    const id = onboardingState.sessionId;
-    if (step === "discover") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/discover`);
-      const total = out.session?.discovery?.totals?.all ?? 0;
-      const totals = out.session?.discovery?.totals;
-      const servers = Array.isArray(out.session?.discovery?.servers) ? out.session.discovery.servers : [];
-      const lines = [];
-      if (totals) {
-        lines.push(`all=${totals.all}, stdio=${totals.stdio}, remote=${totals.remote}, wrappable=${totals.wrappable}`);
-      }
-      if (servers.length) {
-        lines.push(...servers.slice(0, 4).map((server) => `${esc(server.name)} (${esc(server.transport)})`));
-        if (servers.length > 4) lines.push(`+${servers.length - 4} more endpoint(s)`);
-      }
-      setOnboardingDetail("discover", "Discovery", lines);
-      updateOnboardingStatus(step, "ok", `Discovery complete: ${total} endpoint(s).`);
-      return;
-    }
-    if (step === "plan") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/plan`);
-      const sum = out.session?.plan?.summary;
-      const actions = Array.isArray(out.session?.plan?.actions) ? out.session.plan.actions : [];
-      const lines = [];
-      if (sum) {
-        lines.push(`in-place=${sum.inPlace}, proposal=${sum.proposal}, skip-remote=${sum.skipRemote}, already-wrapped=${sum.alreadyWrapped}`);
-      }
-      if (actions.length) {
-        lines.push(...actions.slice(0, 4).map((a) => `${esc(a.server)} -> ${esc(a.action)}`));
-        if (actions.length > 4) lines.push(`+${actions.length - 4} more action(s)`);
-      }
-      setOnboardingDetail("plan", "Plan", lines);
-      const msg = sum
-        ? `Plan: in-place=${sum.inPlace}, proposal=${sum.proposal}, skip-remote=${sum.skipRemote}.`
-        : "Plan created.";
-      updateOnboardingStatus(step, "ok", msg);
-      return;
-    }
-    if (step === "apply") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/apply`);
-      const editedFiles = out.session?.applyResult?.editedFiles || [];
-      const proposalFiles = out.session?.applyResult?.proposalFiles || [];
-      const backups = out.session?.applyResult?.backups || [];
-      const lines = [
-        `edited=${editedFiles.length}, proposals=${proposalFiles.length}, backups=${backups.length}`
-      ];
-      lines.push(...editedFiles.slice(0, 2).map((p) => `edited: ${esc(p)}`));
-      lines.push(...proposalFiles.slice(0, 2).map((p) => `proposal: ${esc(p)}`));
-      setOnboardingDetail("apply", "Apply", lines);
-      updateOnboardingStatus(step, "ok", `Apply complete: edited=${editedFiles.length}, proposals=${proposalFiles.length}.`);
-      refreshConnectionStatus();
-      return;
-    }
-    if (step === "validate") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/validate`);
-      const validation = out.session?.validation || {};
-      const checks = Array.isArray(validation.checks) ? validation.checks : [];
-      const pass = Boolean(validation.pass);
-      const lines = checks.length
-        ? checks.map((c) => `${c.ok ? '<span class="onboard-check-ok">PASS</span>' : '<span class="onboard-check-fail">FAIL</span>'} ${esc(c.check)} - ${esc(c.detail)}`)
-        : ["No validation checks returned."];
-      setOnboardingDetail("validate", "Validation checks", lines);
-      updateOnboardingStatus(step, pass ? "ok" : "fail", pass ? "Validation passed." : "Validation failed. Review check details below.");
-      return;
-    }
-    if (step === "health") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/health`, "GET");
-      const health = out.health || {};
-      const allConnected = Boolean(health.allConnected);
-      const never = Boolean(health.neverConnected);
-      const components = Array.isArray(health.components) ? health.components : [];
-      const lines = components.length
-        ? components.slice(0, 5).map((c) => `${esc(c.component)} (${esc(c.label || "n/a")}) - ${esc(c.state)}`)
-        : ["No component heartbeat entries yet."];
-      setOnboardingDetail("health", "Health components", lines);
-      const message = never
-        ? "No heartbeat yet."
-        : allConnected
-          ? "All connected."
-          : "Health degraded or broken. Check live connection status card.";
-      updateOnboardingStatus(step, allConnected ? "ok" : "fail", message);
-      refreshConnectionStatus();
-      return;
-    }
-    if (step === "rollback") {
-      const out = await onboardingCall(`/api/v1/onboarding/sessions/${id}/rollback`);
-      const restoredFiles = out.session?.rollback?.restoredFiles || [];
-      const skippedBackups = out.session?.rollback?.skippedBackups || [];
-      const lines = [`restored=${restoredFiles.length}, skipped backups=${skippedBackups.length}`];
-      lines.push(...restoredFiles.slice(0, 3).map((p) => `restored: ${esc(p)}`));
-      setOnboardingDetail("rollback", "Rollback", lines);
-      updateOnboardingStatus(step, "ok", `Rollback complete: restored ${restoredFiles.length} file(s).`);
-      refreshConnectionStatus();
-      return;
-    }
-  } catch (error) {
-    updateOnboardingStatus(step, "fail", error instanceof Error ? error.message : `${step} failed.`);
+    return;
   }
-}
-
-async function runOnboardingFlow() {
-  const steps = ["session", "discover", "plan", "apply", "validate", "health"];
-  for (const step of steps) {
-    await runOnboardingStep(step);
-    if (onboardingState.status[step] === "fail") break;
+  
+  if (finishBtn) {
+    e.preventDefault();
+    render("investigations");
+    return;
   }
-}
+});
 
 function render(view, arg) {
   const main = document.getElementById("main");
