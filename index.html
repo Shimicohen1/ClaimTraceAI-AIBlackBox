@@ -931,7 +931,7 @@ function viewSystem() {
     <div class="cards">
       <div class="card">
         <h3>Getting Started</h3>
-        <p>Download a small package, install it, and start capturing AI activity locally. You do not need this repository.</p>
+        <p>Start with a small local package that captures AI activity without changing your application. The package is provided privately after setup approval.</p>
 
         <div class="onboard-wizard" id="onboarding-wizard">
           <!-- Step 1: Choose Package -->
@@ -947,9 +947,9 @@ function viewSystem() {
                 <div style="font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Quick Start</div>
                 <div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">15 minutes</div>
                 <ul class="onboard-simple-list" style="margin: 0;">
-                  <li style="padding: 4px 0;">Start capturing AI activity</li>
-                  <li style="padding: 4px 0;">Local storage only</li>
-                  <li style="padding: 4px 0;">See your first case</li>
+                  <li style="padding: 4px 0;">One local capture service</li>
+                  <li style="padding: 4px 0;">Evidence stays on your computer</li>
+                  <li style="padding: 4px 0;">Best for a first test</li>
                 </ul>
               </div>
 
@@ -957,9 +957,9 @@ function viewSystem() {
                 <div style="font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Full Setup</div>
                 <div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">45 minutes</div>
                 <ul class="onboard-simple-list" style="margin: 0;">
-                  <li style="padding: 4px 0;">Connect all your tools</li>
-                  <li style="padding: 4px 0;">Continuous monitoring</li>
-                  <li style="padding: 4px 0;">Full access controls</li>
+                  <li style="padding: 4px 0;">Capture service plus local MCP tools</li>
+                  <li style="padding: 4px 0;">Connection and health checks</li>
+                  <li style="padding: 4px 0;">Guided review before changes</li>
                 </ul>
               </div>
             </div>
@@ -1139,17 +1139,20 @@ const onboardingWizard = {
       : "Connect all your AI tools and systems.";
 
     const quickContent = `
-      <div style="margin-bottom: 16px;">
-        <a class="onboard-btn-simple onboard-btn-primary" href="https://github.com/Shimicohen1/ClaimTraceAI-AIBlackBox/releases/download/starter-v0.1.0/claimtrace-aiblackbox-starter-v0.1.0.zip" target="_blank" rel="noopener">Download Starter Package</a>
+      <div style="padding: 14px; background: #58b0ff0c; border: 1px solid #58b0ff30; border-radius: 8px; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: var(--trust); font-weight: 700; margin-bottom: 6px;">Starter package</div>
+        <div style="font-size: 12px; color: var(--ink-2); line-height: 1.6;">A private, versioned package containing the local capture service, health check, and optional MCP connection helper. It does not contain your application code, customer data, or credentials.</div>
       </div>
       <ul class="onboard-simple-list">
-        <li><strong>Download and extract</strong> the package anywhere on your computer</li>
-        <li><strong>Open Terminal in the extracted folder</strong></li>
-        <li><strong>Install and start:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code>, then <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
+        <li><strong>Receive the package privately</strong> for your approved environment</li>
+        <li><strong>Extract it anywhere</strong> and open Terminal in that folder</li>
+        <li><strong>Install once:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm install</code></li>
+        <li><strong>Start capture:</strong> <code style="background: #0a0f17; padding: 2px 6px; border-radius: 4px;">npm run blackbox:gateway</code></li>
       </ul>
+      <div style="margin-top: 16px;"><a class="onboard-btn-simple onboard-btn-primary" href="mailto:admin@shimiscyberworld.com?subject=AIBlackBox%20starter%20package%20request">Request Starter Package</a></div>
       <div style="padding: 12px; background: #e0a53a12; border: 1px solid #e0a53a30; border-radius: 8px; margin-top: 16px;">
         <div style="font-size: 12px; color: var(--amber); font-weight: 650; margin-bottom: 6px;">⚠ Keep this terminal open</div>
-        <div style="font-size: 12px; color: var(--ink-2);">The package creates its own local evidence folder. Leave this window open to keep capturing.</div>
+        <div style="font-size: 12px; color: var(--ink-2);">The package creates its own local evidence folder. Leave this window open to keep capturing. Your application repository is not required.</div>
       </div>
     `;
 
